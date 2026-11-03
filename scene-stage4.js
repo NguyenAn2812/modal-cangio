@@ -22,9 +22,21 @@ function smooth(points,n=13){const result=[];for(let i=0;i<points.length-1;i++){
 function channels(c){const conv=points=>smooth(points.map(p=>({x:p.x*c.rx,z:p.z*c.rz})),15);return [{id:'main',w:c.mainWidth,p:conv(c.water.main)},{id:'west',w:c.branchWidth,p:conv(c.water.west)},{id:'east',w:c.branchWidth,p:conv(c.water.east)}];}
 function pathDist(x,z,p){let result=1e5;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i],dx=b.x-a.x,dz=b.z-a.z,t=clamp(((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz+1e-9),0,1);result=Math.min(result,Math.hypot(x-a.x-dx*t,z-a.z-dz*t));}return result;}
 function riverD(x,z){return Math.min(...channelsNow.map(ch=>pathDist(x,z,ch.p)/ch.w));}
+function nearestRiver(x,z){let dist=Infinity,width=.41;for(const ch of channelsNow){const d=pathDist(x,z,ch.p);if(d/ch.w<dist/width){dist=d;width=ch.w;}}return {dist,width};}
+function smoothstep(a,b,v){const t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);}
+function lowHuts(c){if(c?.sites)for(const item of c.sites){if(item.type==='tower'||item.id==='tower'){item.type='hut';item.name='Chòi 5';}}return c;}
 function coast(theta,r,c){const wig=1+.038*Math.sin(5*theta+.2)+.032*Math.cos(9*theta+.8)+.016*Math.sin(17*theta+1);return [c.rx*GD4B.landExpansion*r*wig*Math.cos(theta),c.rz*GD4B.landExpansion*r*wig*Math.sin(theta)];}
 function mask(x,z,c){const angle=Math.atan2(z/c.rz,x/c.rx);const wig=1+.038*Math.sin(5*angle+.2)+.032*Math.cos(9*angle+.8)+.016*Math.sin(17*angle+1);return Math.hypot(x/c.rx,z/c.rz)/(wig*GD4B.landExpansion);}
-function height(x,z,c){const d=riverD(x,z),r=mask(x,z,c);const noise=.31*Math.sin(x*1.2+z*.4)*Math.cos(z*1.56-x*.45)+.20*Math.sin(x*2.9-z*1.4)+.13*Math.cos(x*4.2+z*3.3);return 1.20+.13*noise-.15*Math.max(0,r-.78)-.72*Math.pow(Math.max(0,1-d/(.54+c.bank*2.1)),1.5);}
+function height(x,z,c){
+ // The channel floor used to be ABOVE its water. Carve a real creek basin.
+ const river=nearestRiver(x,z),r=mask(x,z,c);
+ const noise=.20*Math.sin(x*1.2+z*.4)*Math.cos(z*1.56-x*.45)+.13*Math.sin(x*2.9-z*1.4)+.07*Math.cos(x*4.2+z*3.3);
+ const base=1.18+.12*noise-.12*smoothstep(.80,1.03,r);
+ const halfWidth=river.width*GD4B.waterInset;
+ const inner=halfWidth*.87;
+ const outer=halfWidth+river.width*(.48+.53*Math.min(c.bank,1.1));
+ return base-.78*(1-smoothstep(inner,outer,river.dist));
+}
 function paintTexture(type,seed){
  const cv=document.createElement('canvas');cv.width=cv.height=256;const ctx=cv.getContext('2d'),img=ctx.createImageData(256,256),r=rng(seed);
  const base=type==='mud'?[118,105,80]:type==='wood'?[145,111,81]:[117,102,77];
@@ -53,27 +65,39 @@ function rod(g,a,b,radius,material=mat.dark){const a3=new THREE.Vector3(...a),b3
 function box(g,x,y,z,w,h,d,material=mat.wood){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;g.add(m);return m;}
 function terrain(g,c){
  const radial=50,angular=168,positions=[],colors=[],uv=[],indices=[];
- const shade=new THREE.Color(),wet=new THREE.Color('#a69a81'),dry=new THREE.Color('#bac7a0');
+ const shade=new THREE.Color(),wet=new THREE.Color('#887d66'),dry=new THREE.Color('#839776');
  for(let ri=0;ri<=radial;ri++)for(let aj=0;aj<=angular;aj++){const [x,z]=coast(aj/angular*TAU,ri/radial,c),y=height(x,z,c),d=riverD(x,z);positions.push(x,y,z);uv.push(x/3.5,z/3.5);shade.copy(wet).lerp(dry,clamp(d/4,0,1));colors.push(shade.r,shade.g,shade.b);}
  for(let ri=0;ri<radial;ri++)for(let aj=0;aj<angular;aj++){const a=ri*(angular+1)+aj,b=a+angular+1;indices.push(a,b,a+1,b,b+1,a+1);}
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(indices);geo.computeVertexNormals();
  const top=new THREE.Mesh(geo,mat.mud);top.receiveShadow=true;g.add(top);
  const radii=[1,.98,.91,.79,.59,.38,.13,.013],ys=[0,-.22,-.45,-.81,-1.15,-1.46,-1.73,-1.78],vp=[],vc=[],vt=[],ix=[];
- for(let i=0;i<radii.length;i++)for(let j=0;j<=angular;j++){const [x,z]=coast(j/angular*TAU,radii[i],c);const y=i?1.08+ys[i]*c.thickness/1.4:height(x,z,c)-.025;vp.push(x,y,z);vt.push(j/angular*4,i/7*3);const color=new THREE.Color().setRGB(.83-i*.038,.78-i*.036,.67-i*.031);vc.push(color.r,color.g,color.b);}
+ for(let i=0;i<radii.length;i++)for(let j=0;j<=angular;j++){const [x,z]=coast(j/angular*TAU,radii[i],c);const y=i?1.08+ys[i]*c.thickness/1.4:height(x,z,c)-.025;vp.push(x,y,z);vt.push(j/angular*4,i/7*3);const color=new THREE.Color().setRGB(.73-i*.035,.67-i*.031,.53-i*.026);vc.push(color.r,color.g,color.b);}
  for(let i=0;i<radii.length-1;i++)for(let j=0;j<angular;j++){const a=i*(angular+1)+j,b=a+angular+1;ix.push(a,a+1,b,b,a+1,b+1);}
  const cliffGeo=new THREE.BufferGeometry();cliffGeo.setAttribute('position',new THREE.Float32BufferAttribute(vp,3));cliffGeo.setAttribute('uv',new THREE.Float32BufferAttribute(vt,2));cliffGeo.setAttribute('color',new THREE.Float32BufferAttribute(vc,3));cliffGeo.setIndex(ix);cliffGeo.computeVertexNormals();const wall=new THREE.Mesh(cliffGeo,mat.wall);wall.castShadow=true;wall.receiveShadow=true;g.add(wall);
 }
 function water(g,ch){
- const positions=[],uv=[],index=[];
- for(let i=0;i<ch.p.length;i++){
-  const p=ch.p[i],a=ch.p[Math.max(0,i-1)],b=ch.p[Math.min(ch.p.length-1,i+1)],dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz)||1;
-  const taper=Math.pow(Math.max(0,Math.sin(Math.PI*i/(ch.p.length-1))),.72);const width=ch.w*GD4B.waterInset*(.025+.975*taper);for(const sign of [-1,1]){positions.push(p.x-dz/l*sign*width,.72,p.z+dx/l*sign*width);uv.push(sign<0?0:1,i/13);}
+ const pts=ch.p.filter(p=>mask(p.x,p.z,cfg)<.974);
+ if(pts.length<2)return;
+ const positions=[],uv=[],indices=[];
+ for(let i=0;i<pts.length;i++){
+  const p=pts[i],a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
+  const dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz)||1,nx=-dz/len,nz=dx/len;
+  const taper=Math.pow(Math.max(0,Math.sin(Math.PI*i/(pts.length-1))),.5);
+  const baseHalf=ch.w*GD4B.waterInset*(.003+.997*taper);
+  for(const sign of [-1,1]){
+   let half=baseHalf,x=p.x+nx*sign*half,z=p.z+nz*sign*half;
+   for(let k=0;k<12&&mask(x,z,cfg)>.974;k++){half*=.70;x=p.x+nx*sign*half;z=p.z+nz*sign*half;}
+   positions.push(x,.725,z);uv.push(sign<0?0:1,i/14);
+  }
  }
- for(let i=0;i<ch.p.length-1;i++){const a=i*2;index.push(a,a+1,a+2,a+1,a+3,a+2);}
- const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(index);geo.computeVertexNormals();
- const m=new THREE.MeshPhysicalMaterial({color:'#38564b',roughness:.29,metalness:.06,transparent:true,opacity:.94,clearcoat:.45,clearcoatRoughness:.22,side:THREE.DoubleSide,depthWrite:false});
- const obj=new THREE.Mesh(geo,m);obj.renderOrder=3;obj.receiveShadow=true;g.add(obj);
- waterMaterials.push({object:obj,initial:.72});
+ for(let i=0;i<pts.length-1;i++){let n=i*2;indices.push(n,n+1,n+2,n+1,n+3,n+2);}
+ const geometry=new THREE.BufferGeometry();
+ geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+ geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+ geometry.setIndex(indices);geometry.computeVertexNormals();
+ const material=new THREE.MeshPhysicalMaterial({color:'#385b50',roughness:.31,metalness:0,transparent:true,opacity:.95,clearcoat:.42,clearcoatRoughness:.26,side:THREE.DoubleSide,depthWrite:false});
+ const mesh=new THREE.Mesh(geometry,material);mesh.renderOrder=3;mesh.receiveShadow=true;g.add(mesh);
+ waterMaterials.push({object:mesh,initial:.725});
 }
 function forest(g,c){
  if(c.ecosystem?.forest===false)return;
@@ -149,16 +173,12 @@ function deckPlatform(g,x,z,w,d,y,c){
   const xx=x+sx*w*.44,zz=z+sz*d*.44;rod(g,[xx,height(xx,zz,c)-.10,zz],[xx,y,zz],.045,mat.dark);
  }
 }
-function hut(g,s,c,isTower=false){
- const x=s.x*c.rx,z=s.z*c.rz,st=c.structures||{},k=(st.scale??100)/100,w=(isTower?.9:.83)*k,d=.8*k,y=isTower?1.5+2.55*k:1.57,top=y+(isTower?.82:.96)*k;
+function hut(g,s,c){
+ const x=s.x*c.rx,z=s.z*c.rz,st=c.structures||{},k=(st.scale??100)/100,w=.83*k,d=.8*k,y=1.57,top=y+.96*k;
  deckPlatform(g,x,z,w,d,y,c);
  for(const sx of [-1,1])for(const sz of [-1,1]){
   const xx=x+sx*w*.43,zz=z+sz*d*.43;
-  rod(g,[xx,isTower?height(xx,zz,c):y,zz],[xx,top,zz],isTower?.051:.04,mat.dark);
- }
- if(isTower){
-  for(let i=0;i<4;i++){const za=z+(i%2?d*.43:-d*.43),zb=z+(i%2?-d*.43:d*.43),xx=x+(i<2?w*.43:-w*.43);rod(g,[xx,1.55,za],[xx,y-.08,zb],.022,mat.wood);}
-  for(let i=0;i<11;i++){const t=i/10;box(g,x,y-(y-1.50)*t,z+d*.43+t*.93*k,.36*k,.035,.09*k,mat.wood);}
+  rod(g,[xx,y,zz],[xx,top,zz],.04,mat.dark);
  }
  if(st.railings!==false){
   for(const side of [-1,1]){
@@ -172,8 +192,7 @@ function structures(g,c){
  const ps=smooth(c.sites.map(s=>({x:s.x*c.rx,z:s.z*c.rz})),22);
  boardwalk(g,ps,c,c.bridgeWidth);
  for(const s of c.sites){
-  if(s.type==='hut')hut(g,s,c,false);
-  else if(s.type==='tower')hut(g,s,c,true);
+  if(s.type==='hut'||s.type==='tower')hut(g,s,c);
   else if(s.type==='entry'){
    const x=s.x*c.rx,z=s.z*c.rz;deckPlatform(g,x,z,.62,.58,1.57,c);rod(g,[x-.32,1.57,z],[x-.32,2.22,z],.035);rod(g,[x+.32,1.57,z],[x+.32,2.22,z],.035);rod(g,[x-.32,2.22,z],[x+.32,2.22,z],.035);
   }
@@ -187,12 +206,13 @@ function structures(g,c){
 }
 function rebuild(){
  if(!cfg)return;
+ lowHuts(cfg);
  if(group){scene.remove(group);group.traverse(o=>{if(o.geometry&&!Object.values(G).includes(o.geometry))o.geometry.dispose();});}
  group=new THREE.Group();scene.add(group);channelsNow=channels(cfg);waterMaterials=[];
  terrain(group,cfg);if($('#layerWater').checked)for(const ch of channelsNow)water(group,ch);
  if($('#layerForest').checked)forest(group,cfg);
  if($('#layerStructures').checked)structures(group,cfg);
- $('#status').textContent='Đã cập nhật bản dựng GD4';
+ $('#status').textContent='Đã sửa mép lạch và lòng nước · 5 chòi thấp';
 }
 function pose(){
  camera.position.set(pivot.target.x+pivot.distance*Math.sin(pivot.yaw)*Math.cos(pivot.pitch),pivot.target.y+pivot.distance*Math.sin(pivot.pitch),pivot.target.z+pivot.distance*Math.cos(pivot.yaw)*Math.cos(pivot.pitch));camera.lookAt(pivot.target);
@@ -221,14 +241,14 @@ function valid(c){return c&&Number.isFinite(c.rx)&&Number.isFinite(c.rz)&&Array.
 $('#edit').onclick=()=>location.href='./studio.html#layout='+token(cfg);
 $('#export').onclick=()=>{cfg.appearance={landExpansion:GD4B.landExpansion,waterInset:GD4B.waterInset};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({...cfg,_version:'stage-4-preview'},null,2)],{type:'application/json'}));a.download='CanGio_GD4_VatLieu.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);};
 $('#import').onclick=()=>$('#jsonInput').click();
-$('#jsonInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const c=JSON.parse(await f.text());if(!valid(c))throw Error('Cấu hình không hợp lệ');cfg=c;sync();rebuild();}catch(err){alert(err.message)}e.target.value='';};
-$('#reset').onclick=async()=>{try{cfg=await(await fetch('./layouts/CanGio_CongTrinh_GD3.json')).json();sync();rebuild();}catch(e){alert('Không mở được GD3: '+e.message)}};
+$('#jsonInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const c=JSON.parse(await f.text());if(!valid(c))throw Error('Cấu hình không hợp lệ');cfg=lowHuts(c);sync();rebuild();}catch(err){alert(err.message)}e.target.value='';};
+$('#reset').onclick=async()=>{try{const res=await fetch('./layouts/CanGio_GD4_v2.json',{cache:'no-store'});if(!res.ok)throw Error('HTTP '+res.status);cfg=lowHuts(await res.json());sync();rebuild();}catch(e){alert('Không thể khôi phục GD4: '+e.message)}};
 $('#photo').onclick=()=>{renderer.render(scene,camera);const a=document.createElement('a');a.href=renderer.domElement.toDataURL('image/png');a.download='CanGio-GD4.png';a.click();};
 function sync(){if(cfg.appearance){GD4B.landExpansion=clamp(Number(cfg.appearance.landExpansion)||1.24,1.06,1.45);GD4B.waterInset=clamp(Number(cfg.appearance.waterInset)||.76,.48,.91);}$('#landExpand').value=Math.round(GD4B.landExpansion*100);$('#landExpandValue').textContent=Math.round(GD4B.landExpansion*100)+'%';$('#waterInset').value=Math.round(GD4B.waterInset*100);$('#waterInsetValue').textContent=Math.round(GD4B.waterInset*100)+'%';if(!cfg.ecosystem)cfg.ecosystem={density:100,height:100};if(!cfg.structures)cfg.structures={scale:100};$('#density').value=cfg.ecosystem.density;$('#densityValue').textContent=cfg.ecosystem.density+'%';$('#layout').textContent='Đảo '+cfg.rx+' × '+cfg.rz+' · '+cfg.sites.length+' điểm công trình';}
 async function init(){
  try{const response=await fetch('./layouts/CanGio_GD4_v2.json',{cache:'no-store'});if(!response.ok)throw Error('HTTP '+response.status);cfg=await response.json();
- if(location.hash.startsWith('#layout=')){try{const val=unpack(location.hash.slice(8));if(valid(val))cfg=val;}catch(e){console.warn('Không thể nhập liên kết:',e);}}
- sync();resize();rebuild();$('#light').dispatchEvent(new Event('input'));$('#fog').dispatchEvent(new Event('input'));$('#loading').hidden=true;
+ if(location.hash.startsWith('#layout=')){try{const val=unpack(location.hash.slice(8));if(valid(val))cfg=lowHuts(val);}catch(e){console.warn('Không thể nhập liên kết:',e);}}
+ lowHuts(cfg);sync();resize();rebuild();$('#light').dispatchEvent(new Event('input'));$('#fog').dispatchEvent(new Event('input'));$('#loading').hidden=true;
  }catch(e){console.error(e);$('#loading').textContent='Lỗi nạp cảnh: '+e.message;}
 }
 const clock=new THREE.Clock();
