@@ -1,0 +1,32 @@
+name: Import Can Gio user GLB and PBR assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cangio-assets-upload.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Unpack and validate user assets
+        run: python scripts/import_user_assets.py
+      - name: Commit installed assets and remove upload ZIP
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/user
+          git rm -f --ignore-unmatch cangio-assets-upload.zip
+          if ! git diff --cached --quiet; then
+            git commit -m "Install Red Mangrove GLB and new wood/water PBR assets"
+            git push
+          fi
