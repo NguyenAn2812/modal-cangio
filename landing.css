@@ -1,4 +1,4 @@
-
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,300,0,0;9..144,400,0,0;9..144,500,0,0&display=swap');
 :root {
   --night:#0c1914;--night2:#13261c;--night3:#1e3628;--moss:#aabd90;
@@ -156,8 +156,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--moss);outline-offse
 .journey-step:hover{transform:translateX(-3px);border-color:#90a892}
 .journey-step[aria-current="step"]{background:#d9e4ca;border-color:#779e74}
 .journey-step .num{font:400 25px var(--serif);color:#668866}
-.journey-step h4{font:400 23px var(--serif);line-height:1.14;margin:1px 0 9px;letter-spacing:-.025em}
-.journey-step p{font-size:11px;line-height:1.65;color:#657762;margin:0}
+.journey-step .step-name{display:block;font:400 23px/1.14 var(--serif);margin:1px 0 9px;letter-spacing:-.025em}
+.journey-step .step-desc{display:block;font-size:11px;line-height:1.65;color:#657762;margin:0}
 .journey-note{margin:16px 0 0;color:#677b68;font-size:11px}
 .impact{background:var(--sand);color:var(--ink)}
 .impact-head{max-width:930px}
@@ -259,7 +259,7 @@ html.js .reveal.in-view{opacity:1;transform:translateY(0)}
  .scene-overlay-bottom .scene-link{display:inline-block;margin-top:12px}
  .journey-steps{grid-template-columns:1fr;gap:9px}
  .journey-step{min-height:0;padding:18px;grid-template-columns:37px 1fr}
- .journey-step h4{font-size:22px}
+ .journey-step .step-name{font-size:22px}
  .impact-statement{min-height:370px;padding:30px}
  .impact-feature{grid-template-columns:38px 1fr}
  .science-fact{grid-template-columns:105px 1fr}
