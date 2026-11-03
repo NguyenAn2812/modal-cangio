@@ -301,6 +301,13 @@ function mapOverlay({config,toMap}){
   const q=mapPt(n),r=n.type==='entry'?4:n.type==='deck'?3:5;
   out+='<rect x="'+(q.x-r)+'" y="'+(q.y-r)+'" width="'+(r*2)+'" height="'+(r*2)+'" rx="1" fill="#987047" stroke="#f2d5a0" stroke-width="1.2"/>';
  }
+ // Four fixed GLB tree placements are shown in the map to inspect the visual composition.
+ for(const [i,t] of (config.ecosystem?.treeLayout||[]).entries()){
+  const p=toMap({x:t.x,z:t.z});
+  const rr=6.5;
+  out+='<circle cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+'" r="'+rr+'" fill="#2f694c" stroke="#cee3ab" stroke-width="1.5"/>';
+  out+='<text x="'+p.x.toFixed(2)+'" y="'+(p.y+2.4).toFixed(2)+'" font-size="7" font-weight="700" fill="#fff" text-anchor="middle">'+(i+1)+'</text>';
+ }
  return out;
 }
 window.CangioStructures={render,mapOverlay};
