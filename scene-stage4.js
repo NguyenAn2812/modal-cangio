@@ -17,6 +17,28 @@ const skyFill=new THREE.DirectionalLight('#668e84',.50);skyFill.position.set(8,4
 const pivot={yaw:.70,pitch:.58,distance:21,target:new THREE.Vector3(0,.7,0),drag:false,x:0,y:0};
 const GD4B={landExpansion:1.24,waterInset:.76}; // Expanded alluvial island without moving GD3 points
 let cfg=null,group=null,channelsNow=[],waterMaterials=[];
+let userAssetModule=null,userAssetBundle=null;
+async function loadUserAssetBundle(){
+ try{
+  const module=await import('./assets/user/user-assets-stage5.js');
+  userAssetModule=module;
+  userAssetBundle=await module.loadCanGioAssets(THREE,mat,message=>{
+   const el=document.querySelector('#userAssetStatus');
+   if(el)el.textContent=message;
+  });
+  if(userAssetBundle.wood||userAssetBundle.tree||userAssetBundle.waterNormal){
+   rebuild();
+   const msg=userAssetBundle.tree?'Đã thay bằng cây đước GLB thật':'Đã nhập vật liệu mới';
+   const el=document.querySelector('#userAssetStatus');
+   if(el)el.textContent=msg+' · gỗ '+(userAssetBundle.wood?'✓':'—')+' · nước '+(userAssetBundle.waterNormal?'✓':'—');
+  }
+ }catch(e){
+  const el=document.querySelector('#userAssetStatus');
+  if(el)el.textContent='Chưa có gói asset mới trên GitHub. Đang dùng vật liệu GĐ4.';
+  console.info('Optional uploaded assets not yet installed:',e);
+ }
+}
+
 function rng(seed){return ()=>{seed=(seed+0x6D2B79F5)|0;let t=seed;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}
 function smooth(points,n=13){const result=[];for(let i=0;i<points.length-1;i++){const a=points[Math.max(0,i-1)],b=points[i],c=points[i+1],d=points[Math.min(points.length-1,i+2)];for(let j=0;j<n;j++){const t=j/n,t2=t*t,t3=t2*t,f=k=>.5*(2*b[k]+(-a[k]+c[k])*t+(2*a[k]-5*b[k]+4*c[k]-d[k])*t2+(-a[k]+3*b[k]-3*c[k]+d[k])*t3);result.push({x:f('x'),z:f('z')});}}result.push(points.at(-1));return result;}
 function channels(c){const conv=points=>smooth(points.map(p=>({x:p.x*c.rx,z:p.z*c.rz})),15);return [{id:'main',w:c.mainWidth,p:conv(c.water.main)},{id:'west',w:c.branchWidth,p:conv(c.water.west)},{id:'east',w:c.branchWidth,p:conv(c.water.east)}];}
@@ -141,6 +163,9 @@ function water(g,ch){
  geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
  geometry.setIndex(indices);geometry.computeVertexNormals();
  const material=new THREE.MeshPhysicalMaterial({color:'#385b50',roughness:.31,metalness:0,transparent:true,opacity:.95,clearcoat:.42,clearcoatRoughness:.26,side:THREE.DoubleSide,depthWrite:false});
+ if(userAssetBundle?.waterNormal){
+  material.normalMap=userAssetBundle.waterNormal;material.normalScale.set(.12,.12);material.needsUpdate=true;
+ }
  const mesh=new THREE.Mesh(geometry,material);mesh.renderOrder=3;mesh.receiveShadow=true;g.add(mesh);
  waterMaterials.push({object:mesh,initial:.725});
 }
@@ -437,10 +462,16 @@ function structures(g,c){
 function rebuild(){
  if(!cfg)return;
  lowHuts(cfg);
- if(group){scene.remove(group);group.traverse(o=>{if(o.geometry&&!Object.values(G).includes(o.geometry))o.geometry.dispose();});}
+ if(group){scene.remove(group);group.traverse(o=>{if(o.geometry&&!Object.values(G).includes(o.geometry)&&!o.userData?.importedAsset)o.geometry.dispose();});}
  group=new THREE.Group();scene.add(group);channelsNow=channels(cfg);waterMaterials=[];
  terrain(group,cfg);if($('#layerWater').checked)for(const ch of channelsNow)water(group,ch);
- if($('#layerForest').checked)forest(group,cfg);
+ if($('#layerForest').checked){
+  if(userAssetBundle?.tree&&userAssetModule){
+   const count=userAssetModule.buildActualMangroves(THREE,group,cfg,userAssetBundle,
+    {structureGraph,pathDist,mask,height,channelsNow});
+   $('#treeCount').textContent=String(count)+' cây GLB';
+  }else forest(group,cfg);
+ }
  if($('#layerStructures').checked)structures(group,cfg);
  $('#status').textContent='Đã sửa mép lạch và lòng nước · 5 chòi thấp';
 }
@@ -479,9 +510,12 @@ async function init(){
  try{const response=await fetch('./layouts/CanGio_GD4_v2.json',{cache:'no-store'});if(!response.ok)throw Error('HTTP '+response.status);cfg=await response.json();
  if(location.hash.startsWith('#layout=')){try{const val=unpack(location.hash.slice(8));if(valid(val))cfg=lowHuts(val);}catch(e){console.warn('Không thể nhập liên kết:',e);}}
  lowHuts(cfg);sync();resize();rebuild();$('#light').dispatchEvent(new Event('input'));$('#fog').dispatchEvent(new Event('input'));$('#loading').hidden=true;
- loadRealPBR().catch(err=>console.warn('Material fallback:',err));
+ loadRealPBR().catch(err=>console.warn('Material fallback:',err)).finally(()=>loadUserAssetBundle());
  }catch(e){console.error(e);$('#loading').textContent='Lỗi nạp cảnh: '+e.message;}
 }
 const clock=new THREE.Clock();
-function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();for(const obj of waterMaterials)obj.object.position.y=Math.sin(t*.38)*.008;renderer.render(scene,camera);}
+function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();
+ for(const obj of waterMaterials)obj.object.position.y=Math.sin(t*.38)*.008;
+ if(userAssetBundle?.waterNormal)userAssetBundle.waterNormal.offset.set(t*.006,t*.012);
+ renderer.render(scene,camera);}
 animate();init();
