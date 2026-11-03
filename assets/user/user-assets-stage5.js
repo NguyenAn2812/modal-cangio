@@ -87,22 +87,45 @@ export async function loadCanGioAssets(THREE,materials,onProgress=()=>{}){
   return result;
 }
 
-function findPlace(c,graph,tools,used,rand){
-  // Keep roots clear of creek centers and of 5 roofs plus 8 bridge connections.
-  const {mask,height,pathDist,channelsNow}=tools;
-  for(let k=0;k<250;k++){
-    const a=rand()*2*Math.PI,r=Math.sqrt(rand())*.87;
-    const x=c.rx*r*Math.cos(a),z=c.rz*r*Math.sin(a);
-    if(mask(x,z,c)>.88)continue;
-    if(channelsNow.some(ch=>pathDist(x,z,ch.p)<ch.w+0.42))continue;
-    if(graph.nodes.some(n=>Math.abs(x-n.x)<n.w/2+.82&&Math.abs(z-n.z)<n.d/2+.82))continue;
-    if(graph.links.some(l=>pathDist(x,z,l.path)<l.width/2+.52))continue;
-    if(used.some(p=>Math.hypot(x-p.x,z-p.z)<1.65))continue;
-    return {x,z,y:height(x,z,c)};
-  }
-  return null;
+function treeClearance(c,graph,tools,x,z,height,occupied){
+ const {mask,pathDist,channelsNow}=tools;
+ if(mask(x,z,c)>.925)return false;
+ const bankDist=Math.min(...channelsNow.map(ch=>pathDist(x,z,ch.p)));
+ if(bankDist<.36)return false;
+ const margin=.46+height*.17;
+ if(graph.nodes.some(n=>Math.abs(x-n.x)<n.w/2+margin&&Math.abs(z-n.z)<n.d/2+margin))return false;
+ if(graph.links.some(l=>pathDist(x,z,l.path)<l.width/2+margin))return false;
+ if(occupied.some(p=>Math.hypot(x-p.x,z-p.z)<(p.height+height)*.36+.55))return false;
+ return true;
 }
-
+function chooseTreeSite(c,graph,tools,used,anchor,rand){
+ const x0=anchor.x*c.rx,z0=anchor.z*c.rz,height=anchor.height;
+ if(treeClearance(c,graph,tools,x0,z0,height,used))return{x:x0,z:z0,y:tools.height(x0,z0,c),height};
+ let best=null,score=Infinity;
+ for(let i=0;i<500;i++){
+  const theta=rand()*Math.PI*2,d=Math.sqrt(rand())*1.35;
+  const x=x0+Math.cos(theta)*d,z=z0+Math.sin(theta)*d;
+  if(!treeClearance(c,graph,tools,x,z,height,used))continue;
+  const river=Math.min(...tools.channelsNow.map(ch=>tools.pathDist(x,z,ch.p)));
+  const s=d*d+.10*(river-1.15)*(river-1.15);
+  if(s<score){score=s;best={x,z,y:tools.height(x,z,c),height};}
+ }
+ return best;
+}
+function findDebrisSite(c,graph,tools,used,rand){
+ for(let i=0;i<800;i++){
+  const a=rand()*Math.PI*2,r=Math.sqrt(rand())*1.12;
+  const x=c.rx*r*Math.cos(a),z=c.rz*r*Math.sin(a);
+  if(tools.mask(x,z,c)>.94)continue;
+  const dist=Math.min(...tools.channelsNow.map(ch=>tools.pathDist(x,z,ch.p)));
+  if(dist<.28||dist>1.35)continue;
+  if(graph.nodes.some(n=>Math.abs(x-n.x)<n.w/2+.36&&Math.abs(z-n.z)<n.d/2+.36))continue;
+  if(graph.links.some(l=>tools.pathDist(x,z,l.path)<l.width/2+.32))continue;
+  if(used.some(p=>Math.hypot(x-p.x,z-p.z)<.62))continue;
+  return{x,z,y:tools.height(x,z,c)};
+ }
+ return null;
+}
 function randomSeed(seed){return()=>{seed=(seed+0x6d2b79f5)|0;let t=seed;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
 function normalizeModel(THREE,source,targetHeight){
   const box=new THREE.Box3().setFromObject(source);
@@ -111,37 +134,56 @@ function normalizeModel(THREE,source,targetHeight){
   return {scale:scalar,box};
 }
 export function buildActualMangroves(THREE,g,c,assets,tools){
-  if(!assets?.tree)return 0;
-  const rand=randomSeed(518473);
-  const graph=tools.structureGraph(c),positions=[];
-  const desired=matchMedia('(max-width:700px)').matches?1:3;
-  const model=assets.tree;
-  for(let i=0;i<desired;i++){
-    const p=findPlace(c,graph,tools,positions,rand);if(!p)break;
-    positions.push(p);
-    const copy=model.clone(true);
-    const {scale,box}=normalizeModel(THREE,copy,2.55+i*.31);
-    const ctr=box.getCenter(new THREE.Vector3());
-    copy.scale.setScalar(scale);
-    copy.position.set(-ctr.x*scale,-box.min.y*scale,-ctr.z*scale);
-    const pivot=new THREE.Group();pivot.position.set(p.x,p.y,p.z);pivot.rotation.y=rand()*Math.PI*2;
-    copy.name='Cây đước thật '+(i+1);pivot.add(copy);g.add(pivot);
+ if(!assets?.tree)return 0;
+ const rand=randomSeed(518473),graph=tools.structureGraph(c),occupied=[];
+ // Art-directed, reproducible composition; never regenerate a different forest
+ // after changing light/fog or orbit. Anchors are editable in the GD5 JSON.
+ const anchors=c.ecosystem?.treeLayout?.length?c.ecosystem.treeLayout:[
+  {id:'west',x:-.753,z:-.621,height:3.05,yaw:28},
+  {id:'east',x:1.036,z:.016,height:2.80,yaw:146},
+  {id:'front',x:-.168,z:.840,height:2.58,yaw:253},
+  {id:'back',x:.207,z:-.955,height:2.32,yaw:72}
+ ];
+ const limit=innerWidth<700?1:innerWidth<1000?3:4;
+ const source=assets.tree,modelBox=new THREE.Box3().setFromObject(source);
+ const size=modelBox.getSize(new THREE.Vector3());
+ const center=modelBox.getCenter(new THREE.Vector3());
+ const baseScale=1/Math.max(.0001,size.y);
+ let count=0;
+ for(const [i,anchor] of anchors.slice(0,limit).entries()){
+  const p=chooseTreeSite(c,graph,tools,occupied,anchor,rand);
+  if(!p)continue;
+  occupied.push({...p,height:anchor.height});
+  const scale=baseScale*anchor.height;
+  const pivot=new THREE.Group();
+  pivot.name='Cây đước GLB · '+anchor.id;
+  pivot.position.set(p.x,p.y-.035,p.z);
+  pivot.rotation.y=(anchor.yaw??0)*Math.PI/180;
+  pivot.userData.placement={id:anchor.id,x:p.x,z:p.z,height:anchor.height,manual:true};
+  const tree=source.clone(true);
+  tree.scale.setScalar(scale);
+  tree.position.set(-center.x*scale,-modelBox.min.y*scale,-center.z*scale);
+  // Keep GLB materials/textures; mesh geometry is shared by each clone.
+  tree.traverse(o=>{if(o.isMesh)o.userData.importedAsset=true;});
+  pivot.add(tree);g.add(pivot);count++;
+ }
+ if(assets.branches){
+  const branch=assets.branches;
+  for(let i=0;i<7;i++){
+   const p=findDebrisSite(c,graph,tools,occupied,rand);if(!p)break;
+   occupied.push({...p,height:.18});
+   const model=branch.clone(true),bounds=new THREE.Box3().setFromObject(model);
+   const size=bounds.getSize(new THREE.Vector3());
+   const scale=(.23+rand()*.24)/Math.max(size.y,.01);
+   const center=bounds.getCenter(new THREE.Vector3());
+   const pivot=new THREE.Group();pivot.name='Cành mục ở bờ bùn '+(i+1);
+   pivot.position.set(p.x,p.y+.015,p.z);
+   pivot.rotation.set(0,rand()*Math.PI*2,(rand()-.5)*.14);
+   model.scale.setScalar(scale);
+   model.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);
+   model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.userData.importedAsset=true;}});
+   pivot.add(model);g.add(pivot);
   }
-  const realCount=positions.length;
-  if(assets.branches){
-    const branchModel=assets.branches;
-    for(let i=0;i<4;i++){
-      const p=findPlace(c,graph,tools,positions,rand);if(!p)break;
-      positions.push(p);
-      const b=branchModel.clone(true);
-      const {scale,box}=normalizeModel(THREE,b,.26+rand()*.30);
-      const center=box.getCenter(new THREE.Vector3());
-      b.scale.setScalar(scale);
-      b.position.set(-center.x*scale,-box.min.y*scale+.01,-center.z*scale);
-      const pivot=new THREE.Group();pivot.position.set(p.x,p.y,p.z);pivot.rotation.y=rand()*Math.PI*2;
-      b.traverse(o=>{if(o.isMesh)o.castShadow=false});
-      b.name='Cành khô trên bãi bùn '+(i+1);pivot.add(b);g.add(pivot);
-    }
-  }
-  return realCount;
+ }
+ return count;
 }
