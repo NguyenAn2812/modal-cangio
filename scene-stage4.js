@@ -144,65 +144,203 @@ function forest(g,c){
  }
  $('#treeCount').textContent=String(n);
 }
-function boardwalk(g,path,c,width){
- const y=1.56,w=width||c.bridgeWidth,st=c.structures||{},postsL=[],postsR=[];
- for(let i=0;i<path.length-1;i++){
-  const a=path[i],b=path[i+1],dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz);if(l<.004)continue;
-  const deck=box(g,(a.x+b.x)/2,y,(a.z+b.z)/2,l+.009,.065,w,i%3===0?mat.dark:mat.wood);deck.rotation.y=Math.atan2(-dz,dx);
- }
- for(let i=0;i<path.length;i+=Math.max(3,Math.floor(path.length/25))){
-  const p=path[i],a=path[Math.max(i-1,0)],b=path[Math.min(i+1,path.length-1)],dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz)||1;
-  for(const s of [-1,1]){
-   const x=p.x-s*dz/l*w*.54,z=p.z+s*dx/l*w*.54;
-   if(st.piles!==false)rod(g,[x,height(x,z,c)-.08,z],[x,y+.06,z],.038,mat.dark);
-   if(st.railings!==false){rod(g,[x,y,z],[x,y+.48,z],.028,mat.wood);(s<0?postsL:postsR).push({x,z});}
+// GD4 • Junction-aware boardwalk construction.
+// The five hut platforms own their floor, roof posts and perimeter rails.
+// Boardwalk edges terminate at platform boundaries, never at platform centers.
+const DECK_Y=1.57;
+function structureGraph(c){
+ const scale=(c.structures?.scale??100)/100;
+ const nodes=c.sites.map(s=>({
+  id:s.id,type:s.type==='entry'?'entry':'hut',x:s.x*c.rx,z:s.z*c.rz,
+  w:s.type==='entry'?.62:.83*scale,d:s.type==='entry'?.58:.80*scale,
+  openFaces:new Set(),site:s
+ }));
+ const byId=Object.fromEntries(nodes.map(n=>[n.id,n]));
+ // Peripheral viewing decks are moved outside hut footprints to avoid overlap.
+ if(c.structures?.spurs!==false){
+  const docks=[['hut1',-1.40,-.25],['hut3',.30,-1.44],['hut4',-1.42,.24]];
+  for(const [id,dx,dz] of docks){
+   const parent=byId[id];if(!parent)continue;
+   const dock={id:id+'-deck',type:'deck',x:parent.x+dx,z:parent.z+dz,
+     w:.48,d:.44,openFaces:new Set(),parentId:id};
+   nodes.push(dock);byId[dock.id]=dock;
   }
  }
- if(st.railings!==false)for(const ps of [postsL,postsR])for(let i=1;i<ps.length;i++)rod(g,[ps[i-1].x,y+.43,ps[i-1].z],[ps[i].x,y+.43,ps[i].z],.015,mat.rope);
+ function portal(from,to){
+  const dx=to.x-from.x,dz=to.z-from.z;
+  // Pick the face that is most directly aimed at the other platform.
+  const xFace=Math.abs(dx)/(from.w*.5),zFace=Math.abs(dz)/(from.d*.5);
+  if(xFace>=zFace){
+   const sign=dx>=0?1:-1;
+   return {x:from.x+sign*from.w*.5,z:from.z,face:sign>0?'east':'west',nx:sign,nz:0};
+  }
+  const sign=dz>=0?1:-1;
+  return {x:from.x,z:from.z+sign*from.d*.5,face:sign>0?'south':'north',nx:0,nz:sign};
+ }
+ const links=[];
+ function connect(a,b,width){
+  const p=portal(a,b),q=portal(b,a);
+  a.openFaces.add(p.face);b.openFaces.add(q.face);
+  const length=Math.hypot(q.x-p.x,q.z-p.z);
+  const t=clamp(length*.22,.16,.72);
+  // Cubic connectors leave and enter platforms normal to their open side.
+  const p1={x:p.x+p.nx*t,z:p.z+p.nz*t};
+  const p2={x:q.x+q.nx*t,z:q.z+q.nz*t};
+  const steps=Math.max(8,Math.min(64,Math.ceil(length/.09)));
+  const path=[];
+  for(let i=0;i<=steps;i++){
+   const u=i/steps,v=1-u;
+   path.push({
+    x:v*v*v*p.x+3*v*v*u*p1.x+3*v*u*u*p2.x+u*u*u*q.x,
+    z:v*v*v*p.z+3*v*v*u*p1.z+3*v*u*u*p2.z+u*u*u*q.z
+   });
+  }
+  links.push({from:a.id,to:b.id,fromFace:p.face,toFace:q.face,width,path});
+ }
+ // Existing GD3 topology: same sites, same order, no new hut locations.
+ for(let i=1;i<c.sites.length;i++)connect(byId[c.sites[i-1].id],byId[c.sites[i].id],c.bridgeWidth);
+ for(const n of nodes.filter(n=>n.type==='deck'))connect(byId[n.parentId],n,c.bridgeWidth*.76);
+ return {nodes,links};
 }
-function roof(g,x,z,w,d,y){
- const positions=[x-w*.58,y,z-d*.6,x,y+w*.35,z-d*.6,x,y+w*.35,z+d*.6,x-w*.58,y,z-d*.6,x,y+w*.35,z+d*.6,x-w*.58,y,z+d*.6,x,y+w*.35,z-d*.6,x+w*.58,y,z-d*.6,x+w*.58,y,z+d*.6,x,y+w*.35,z-d*.6,x+w*.58,y,z+d*.6,x,y+w*.35,z+d*.6];
- const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.computeVertexNormals();
+function tube(g,a,b,radius,material){
+ const len=Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]);
+ if(len>.00001)rod(g,a,b,radius,material);
+}
+function simpleDeck(g,x,z,w,d,y=DECK_Y){
+ box(g,x,y-.09,z,w,.15,d,mat.dark);
+ const planks=Math.max(4,Math.round(w/.125));
+ for(let i=0;i<planks;i++){
+  const xx=x-w/2+(i+.5)*w/planks;
+  box(g,xx,y+.005,z,w/planks-.006,.035,d,mat.wood);
+ }
+}
+function cornerPosts(g,node,roofHeight,hasRoof,c){
+ // One structural post per corner, continuous from alluvial soil to the eave.
+ // No duplicated floor supports and no overlaid posts from the walkway.
+ const corners=[];
+ for(const sx of [-1,1])for(const sz of [-1,1]){
+  const px=node.x+sx*node.w*.45,pz=node.z+sz*node.d*.45;
+  const ground=height(px,pz,c)-.10;
+  const cap=hasRoof?roofHeight:DECK_Y+.51;
+  tube(g,[px,ground,pz],[px,cap,pz],hasRoof?.040:.034,mat.dark);
+  corners.push({x:px,z:pz});
+ }
+ return corners;
+}
+function faceEndpoints(node,face){
+ const x=node.x,z=node.z,hw=node.w*.45,hd=node.d*.45;
+ if(face==='north')return [{x:x-hw,z:z-hd},{x:x+hw,z:z-hd}];
+ if(face==='south')return [{x:x-hw,z:z+hd},{x:x+hw,z:z+hd}];
+ if(face==='east')return [{x:x+hw,z:z-hd},{x:x+hw,z:z+hd}];
+ return [{x:x-hw,z:z-hd},{x:x-hw,z:z+hd}];
+}
+function perimeterRails(g,node){
+ if(cfg.structures?.railings===false)return;
+ for(const face of ['north','east','south','west']){
+  // Each connector face is an open passage: no rails through the doorway.
+  if(node.openFaces.has(face))continue;
+  const [a,b]=faceEndpoints(node,face);
+  tube(g,[a.x,DECK_Y+.46,a.z],[b.x,DECK_Y+.46,b.z],.017,mat.rope);
+  tube(g,[a.x,DECK_Y+.24,a.z],[b.x,DECK_Y+.24,b.z],.013,mat.wood);
+ }
+}
+function hutRoof(g,node,eave){
+ // Preserve the simple, low pitched-roof silhouette from GD4.
+ const x=node.x,z=node.z,w=node.w,d=node.d,y=eave;
+ const positions=[
+  x-w*.58,y,z-d*.6,x,y+w*.35,z-d*.6,x,y+w*.35,z+d*.6,
+  x-w*.58,y,z-d*.6,x,y+w*.35,z+d*.6,x-w*.58,y,z+d*.6,
+  x,y+w*.35,z-d*.6,x+w*.58,y,z-d*.6,x+w*.58,y,z+d*.6,
+  x,y+w*.35,z-d*.6,x+w*.58,y,z+d*.6,x,y+w*.35,z+d*.6
+ ];
+ const geo=new THREE.BufferGeometry();
+ geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.computeVertexNormals();
  const mesh=new THREE.Mesh(geo,mat.roof);mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);
- rod(g,[x,y+w*.35,z-d*.61],[x,y+w*.35,z+d*.61],.025,mat.dark);
+ tube(g,[x,y+w*.35,z-d*.61],[x,y+w*.35,z+d*.61],.024,mat.dark);
 }
-function deckPlatform(g,x,z,w,d,y,c){
- box(g,x,y-.065,z,w,.13,d,mat.dark);
- for(let j=0;j<6;j++)box(g,x-w/2+(j+.5)*w/6,y+.013,z,w/6-.008,.026,d,mat.wood);
- for(const sx of [-1,1])for(const sz of [-1,1]){
-  const xx=x+sx*w*.44,zz=z+sz*d*.44;rod(g,[xx,height(xx,zz,c)-.10,zz],[xx,y,zz],.045,mat.dark);
+function platformNode(g,node,c){
+ const roofed=node.type==='hut',roofOn=roofed&&c.structures?.roofs!==false;
+ const eave=DECK_Y+.96*(c.structures?.scale??100)/100;
+ simpleDeck(g,node.x,node.z,node.w,node.d);
+ cornerPosts(g,node,eave,roofOn,c);
+ perimeterRails(g,node);
+ if(roofOn)hutRoof(g,node,eave);
+ if(node.type==='entry'){
+  // A small entry sign without overlapping the corner structural supports.
+  const z=node.z;
+  tube(g,[node.x-.23,DECK_Y,z],[node.x-.23,DECK_Y+.62,z],.026,mat.wood);
+  tube(g,[node.x+.23,DECK_Y,z],[node.x+.23,DECK_Y+.62,z],.026,mat.wood);
+  tube(g,[node.x-.25,DECK_Y+.62,z],[node.x+.25,DECK_Y+.62,z],.030,mat.wood);
  }
 }
-function hut(g,s,c){
- const x=s.x*c.rx,z=s.z*c.rz,st=c.structures||{},k=(st.scale??100)/100,w=.83*k,d=.8*k,y=1.57,top=y+.96*k;
- deckPlatform(g,x,z,w,d,y,c);
- for(const sx of [-1,1])for(const sz of [-1,1]){
-  const xx=x+sx*w*.43,zz=z+sz*d*.43;
-  rod(g,[xx,y,zz],[xx,top,zz],.04,mat.dark);
+function routeLength(path){
+ let len=0;const lengths=[0];
+ for(let i=1;i<path.length;i++){len+=Math.hypot(path[i].x-path[i-1].x,path[i].z-path[i-1].z);lengths.push(len);}
+ return {lengths,total:len};
+}
+function pointOnRoute(path,lengths,s){
+ const total=lengths[lengths.length-1];
+ const d=clamp(s,0,total);
+ let k=1;while(k<lengths.length-1&&lengths[k]<d)k++;
+ const a=path[k-1],b=path[k],den=lengths[k]-lengths[k-1]||1;
+ const t=clamp((d-lengths[k-1])/den,0,1);
+ const dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz)||1;
+ return {x:a.x+dx*t,z:a.z+dz*t,nx:-dz/l,nz:dx/l};
+}
+function walkway(g,link,c){
+ const path=link.path,w=link.width,st=c.structures??{},y=DECK_Y;
+ const {lengths,total}=routeLength(path);
+ if(total<.03)return;
+ // Continuous dark underdeck avoids triangle gaps between curved planks.
+ const vertices=[],faces=[];
+ for(let i=0;i<path.length;i++){
+  const p=path[i],q=path[Math.max(0,i-1)],r=path[Math.min(i+1,path.length-1)];
+  const dx=r.x-q.x,dz=r.z-q.z,l=Math.hypot(dx,dz)||1,nx=-dz/l,nz=dx/l;
+  vertices.push(p.x+nx*w/2,y-.047,p.z+nz*w/2,p.x-nx*w/2,y-.047,p.z-nz*w/2);
+  if(i>0){const k=(i-1)*2;faces.push(k,k+1,k+2,k+1,k+3,k+2);}
  }
- if(st.railings!==false){
-  for(const side of [-1,1]){
-   const xx=x+side*w*.47;rod(g,[xx,y+.38,z-d*.44],[xx,y+.38,z+d*.44],.016,mat.rope);
-   rod(g,[x-w*.45,y+.38,z+side*d*.47],[x+w*.45,y+.38,z+side*d*.47],.016,mat.rope);
+ const geom=new THREE.BufferGeometry();
+ geom.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geom.setIndex(faces);geom.computeVertexNormals();
+ const under=new THREE.Mesh(geom,new THREE.MeshStandardMaterial({color:'#3a2e23',roughness:.97,side:THREE.DoubleSide}));
+ under.receiveShadow=true;g.add(under);
+ // Actual planks: locally tangent to the track. They end exactly at each platform face.
+ const plankN=Math.max(4,Math.ceil(total/.115));
+ for(let j=0;j<plankN;j++){
+  const a=pointOnRoute(path,lengths,j*total/plankN),b=pointOnRoute(path,lengths,(j+1)*total/plankN);
+  const dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);
+  const plank=box(g,(a.x+b.x)/2,y,(a.z+b.z)/2,len+.004,.037,w-.010,j%9===0?mat.dark:mat.wood);
+  plank.rotation.y=Math.atan2(-dz,dx);
+ }
+ // One post per side at each station: its bottom is the foundation and its
+ // upper part is the handrail upright. No second pile at the same position.
+ const stations=[];
+ if(total>.48){
+  stations.push(.18);
+  for(let s=.18+.62;s<total-.30;s+=.62)stations.push(s);
+  if(total-.18-stations[stations.length-1]>.26)stations.push(total-.18);
+ }
+ for(const side of [-1,1]){
+  const railPts=[];
+  for(const station of stations){
+   const p=pointOnRoute(path,lengths,station);
+   const x=p.x+p.nx*side*(w/2+.025),z=p.z+p.nz*side*(w/2+.025);
+   const ground=height(x,z,c)-.10;
+   tube(g,[x,st.piles!==false?ground:y,z],[x,y+.52,z],.031,mat.dark);
+   railPts.push({x,z});
+  }
+  if(st.railings!==false)for(let i=1;i<railPts.length;i++){
+   const a=railPts[i-1],b=railPts[i];
+   tube(g,[a.x,y+.48,a.z],[b.x,y+.48,b.z],.016,mat.rope);
+   tube(g,[a.x,y+.25,a.z],[b.x,y+.25,b.z],.012,mat.wood);
   }
  }
- if(st.roofs!==false)roof(g,x,z,w,d,top);
 }
 function structures(g,c){
- const ps=smooth(c.sites.map(s=>({x:s.x*c.rx,z:s.z*c.rz})),22);
- boardwalk(g,ps,c,c.bridgeWidth);
- for(const s of c.sites){
-  if(s.type==='hut'||s.type==='tower')hut(g,s,c);
-  else if(s.type==='entry'){
-   const x=s.x*c.rx,z=s.z*c.rz;deckPlatform(g,x,z,.62,.58,1.57,c);rod(g,[x-.32,1.57,z],[x-.32,2.22,z],.035);rod(g,[x+.32,1.57,z],[x+.32,2.22,z],.035);rod(g,[x-.32,2.22,z],[x+.32,2.22,z],.035);
-  }
- }
- if(c.structures?.spurs!==false)for(const [id,dx,dz]of [['hut1',-.4,-.3],['hut3',.36,-.36],['hut4',-.39,.28]]){
-  const s=c.sites.find(t=>t.id===id);if(!s)continue;
-  const x=s.x*c.rx,z=s.z*c.rz;
-  boardwalk(g,smooth([{x,z},{x:x+dx*.55,z:z+dz*.55},{x:x+dx,z:z+dz}],8),c,c.bridgeWidth*.76);
-  deckPlatform(g,x+dx,z+dz,.48,.44,1.57,c);
- }
+ const graph=structureGraph(c);
+ // Distinct links avoid crossing through hut footprints or joining rails
+ // across a node. Platforms and walkway supports are built only once.
+ for(const link of graph.links)walkway(g,link,c);
+ for(const node of graph.nodes)platformNode(g,node,c);
 }
 function rebuild(){
  if(!cfg)return;
