@@ -32,6 +32,15 @@ SOURCES = {
             "rough": "rock_0006_roughness_1k.jpg"
         }
     },
+    "sediment": {
+        "url": "https://ambientcg.com/get?file=Rock061_1K-JPG.zip",
+        "origin": "https://ambientcg.com/view?id=Rock061",
+        "files": {
+            "color": "Rock061_1K-JPG_Color.jpg",
+            "normal": "Rock061_1K-JPG_NormalGL.jpg",
+            "rough": "Rock061_1K-JPG_Roughness.jpg"
+        }
+    },
     "bark": {
         "url": "https://ambientcg.com/get?file=Bark016_1K-PNG.zip",
         "origin": "https://ambientcg.com/view?id=Bark016",
