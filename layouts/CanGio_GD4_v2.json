@@ -38,8 +38,8 @@
     },
     {
       "id": "tower",
-      "name": "Tháp",
-      "type": "tower",
+      "name": "Chòi 5",
+      "type": "hut",
       "x": 0.77,
       "z": -0.46
     },
@@ -134,6 +134,6 @@
     "waterInset": 0.76
   },
   "_project": "Vong Xo Can Gio",
-  "_version": "stage-4-v2",
+  "_version": "stage-4-v3-five-low-huts",
   "_unit": "conceptual"
 }
