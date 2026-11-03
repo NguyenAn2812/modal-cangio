@@ -77,6 +77,7 @@ const mat={
  moss:new THREE.MeshStandardMaterial({map:mudTex,color:'#81916d',roughness:.98,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1}),
  wet:new THREE.MeshStandardMaterial({color:'#3e3c32',roughness:.62,metalness:0,transparent:true,opacity:.34,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}),
  pebble:new THREE.MeshStandardMaterial({map:mudTex,color:'#8e8879',roughness:.94,side:THREE.DoubleSide}),
+ litter:new THREE.MeshStandardMaterial({color:'#5c6942',roughness:1,side:THREE.DoubleSide}),
  wall:new THREE.MeshStandardMaterial({map:mudTex,color:'#c5ad8a',vertexColors:true,roughness:1,side:THREE.DoubleSide}),
  wood:new THREE.MeshStandardMaterial({map:woodTex,color:'#dec7a4',roughness:.89}),
  dark:new THREE.MeshStandardMaterial({map:woodTex,color:'#6b513c',roughness:.98}),
@@ -219,8 +220,7 @@ function detailGround(g,c){
  stones.count=np;if(np){stones.instanceMatrix.needsUpdate=true;setup(stones);}
  // Organic litter on raised patches, not black triangular spikes.
  const leafGeom=new THREE.PlaneGeometry(.08,.22);
- const leafMaterial=new THREE.MeshStandardMaterial({color:'#5c6942',roughness:1,side:THREE.DoubleSide});
- const leaves=new THREE.InstancedMesh(leafGeom,leafMaterial,Math.round(145*intensity));let nl=0;
+ const leaves=new THREE.InstancedMesh(leafGeom,mat.litter,Math.round(145*intensity));let nl=0;
  for(let i=0;i<leaves.count;i++){
   const p=sample(false);if(!p)break;
   dummy.position.set(p.x,p.y+.018,p.z);dummy.rotation.set(-Math.PI/2,0,random()*TAU);
