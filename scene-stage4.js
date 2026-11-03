@@ -577,6 +577,12 @@ $('#camTop').onclick=()=>{pivot.yaw=0;pivot.pitch=1.52;pivot.distance=17;pose();
 $('#camNear').onclick=()=>{pivot.yaw=.95;pivot.pitch=.47;pivot.distance=12;pose();};
 $('#toggleControls').onclick=()=>$('#panel').classList.toggle('closed');
 for(const id of ['layerForest','layerWater','layerStructures'])$('#'+id).addEventListener('change',rebuild);
+$('#glbTreeCount').oninput=e=>{
+ if(!cfg.ecosystem)cfg.ecosystem={};
+ cfg.ecosystem.treeCount=Number(e.target.value);
+ $('#glbTreeCountValue').textContent=e.target.value+' cây';
+ clearTimeout(window.__treeDebounce);window.__treeDebounce=setTimeout(rebuild,200);
+};
 $('#terrainDetail').oninput=e=>{
  if(!cfg.appearance)cfg.appearance={};
  cfg.appearance.terrainDetail=Number(e.target.value)/100;
@@ -602,6 +608,8 @@ $('#photo').onclick=()=>{renderer.render(scene,camera);const a=document.createEl
 function sync(){if(cfg.appearance){GD4B.landExpansion=clamp(Number(cfg.appearance.landExpansion)||1.24,1.06,1.45);GD4B.waterInset=clamp(Number(cfg.appearance.waterInset)||.76,.48,.91);}$('#landExpand').value=Math.round(GD4B.landExpansion*100);$('#landExpandValue').textContent=Math.round(GD4B.landExpansion*100)+'%';$('#waterInset').value=Math.round(GD4B.waterInset*100);$('#waterInsetValue').textContent=Math.round(GD4B.waterInset*100)+'%';if(!cfg.ecosystem)cfg.ecosystem={density:100,height:100};if(!cfg.structures)cfg.structures={scale:100};if(!cfg.appearance)cfg.appearance={terrainDetail:.75};
  $('#terrainDetail').value=Math.round(100*(cfg.appearance.terrainDetail??.75));
  $('#terrainDetailValue').textContent=$('#terrainDetail').value+'%';
+ $('#glbTreeCount').value=cfg.ecosystem.treeCount??4;
+ $('#glbTreeCountValue').textContent=$('#glbTreeCount').value+' cây';
  $('#density').value=cfg.ecosystem.density;$('#densityValue').textContent=cfg.ecosystem.density+'%';$('#layout').textContent='Đảo '+cfg.rx+' × '+cfg.rz+' · '+cfg.sites.length+' điểm công trình';}
 async function init(){
  try{const response=await fetch('./layouts/CanGio_GD4_v2.json',{cache:'no-store'});if(!response.ok)throw Error('HTTP '+response.status);cfg=await response.json();
