@@ -87,7 +87,7 @@ el('view3dBtn').onclick=()=>{
  let bytes=new TextEncoder().encode(JSON.stringify(config)),bin='';
  for(const b of bytes)bin+=String.fromCharCode(b);
  const token=btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
- location.href='./index.html#layout='+token;
+ location.href='./3d.html#layout='+token;
 };
 el('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify({...config,_project:'Vong Xo Can Gio',_version:'stage-4-v3',_unit:'conceptual'},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download='CanGio_5_Choi_Thap_GD4.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),300)};
 el('importBtn').onclick=()=>el('importInput').click();el('importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{let val=JSON.parse(await f.text());if(!valid(val))throw Error('Tệp không đúng định dạng Terrain Studio');config=lowHuts(val);if(!config.ecosystem)config.ecosystem={density:75,height:100,forest:true,roots:true,understory:true};if(!config.structures)config.structures={scale:100,railings:true,piles:true,spurs:true,roofs:true};resetSliders();syncEco();syncStructures();changed();alert('Đã nhập bản thiết kế.')}catch(e){alert('Không thể nhập: '+e.message)}e.target.value=''};
