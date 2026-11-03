@@ -577,6 +577,12 @@ $('#camTop').onclick=()=>{pivot.yaw=0;pivot.pitch=1.52;pivot.distance=17;pose();
 $('#camNear').onclick=()=>{pivot.yaw=.95;pivot.pitch=.47;pivot.distance=12;pose();};
 $('#toggleControls').onclick=()=>$('#panel').classList.toggle('closed');
 for(const id of ['layerForest','layerWater','layerStructures'])$('#'+id).addEventListener('change',rebuild);
+$('#terrainDetail').oninput=e=>{
+ if(!cfg.appearance)cfg.appearance={};
+ cfg.appearance.terrainDetail=Number(e.target.value)/100;
+ $('#terrainDetailValue').textContent=e.target.value+'%';
+ clearTimeout(window.__terrainDebounce);window.__terrainDebounce=setTimeout(rebuild,200);
+};
 $('#density').oninput=e=>{cfg.ecosystem.density=Number(e.target.value);$('#densityValue').textContent=e.target.value+'%';clearTimeout(window.__gd4Rebuild);window.__gd4Rebuild=setTimeout(rebuild,180);};
 $('#light').oninput=e=>{const v=Number(e.target.value)/100;sunlight.intensity=.85+v*2.3;hemi.intensity=.90+v*.94;renderer.toneMappingExposure=1.00+v*.43;$('#lightValue').textContent=e.target.value+'%';};
 $('#fog').oninput=e=>{scene.fog.density=.002+Number(e.target.value)*.00022;$('#fogValue').textContent=e.target.value+'%';};
@@ -593,7 +599,10 @@ $('#import').onclick=()=>$('#jsonInput').click();
 $('#jsonInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const c=JSON.parse(await f.text());if(!valid(c))throw Error('Cấu hình không hợp lệ');cfg=lowHuts(c);sync();rebuild();}catch(err){alert(err.message)}e.target.value='';};
 $('#reset').onclick=async()=>{try{const res=await fetch('./layouts/CanGio_GD4_v2.json',{cache:'no-store'});if(!res.ok)throw Error('HTTP '+res.status);cfg=lowHuts(await res.json());sync();rebuild();}catch(e){alert('Không thể khôi phục GD4: '+e.message)}};
 $('#photo').onclick=()=>{renderer.render(scene,camera);const a=document.createElement('a');a.href=renderer.domElement.toDataURL('image/png');a.download='CanGio-GD4.png';a.click();};
-function sync(){if(cfg.appearance){GD4B.landExpansion=clamp(Number(cfg.appearance.landExpansion)||1.24,1.06,1.45);GD4B.waterInset=clamp(Number(cfg.appearance.waterInset)||.76,.48,.91);}$('#landExpand').value=Math.round(GD4B.landExpansion*100);$('#landExpandValue').textContent=Math.round(GD4B.landExpansion*100)+'%';$('#waterInset').value=Math.round(GD4B.waterInset*100);$('#waterInsetValue').textContent=Math.round(GD4B.waterInset*100)+'%';if(!cfg.ecosystem)cfg.ecosystem={density:100,height:100};if(!cfg.structures)cfg.structures={scale:100};$('#density').value=cfg.ecosystem.density;$('#densityValue').textContent=cfg.ecosystem.density+'%';$('#layout').textContent='Đảo '+cfg.rx+' × '+cfg.rz+' · '+cfg.sites.length+' điểm công trình';}
+function sync(){if(cfg.appearance){GD4B.landExpansion=clamp(Number(cfg.appearance.landExpansion)||1.24,1.06,1.45);GD4B.waterInset=clamp(Number(cfg.appearance.waterInset)||.76,.48,.91);}$('#landExpand').value=Math.round(GD4B.landExpansion*100);$('#landExpandValue').textContent=Math.round(GD4B.landExpansion*100)+'%';$('#waterInset').value=Math.round(GD4B.waterInset*100);$('#waterInsetValue').textContent=Math.round(GD4B.waterInset*100)+'%';if(!cfg.ecosystem)cfg.ecosystem={density:100,height:100};if(!cfg.structures)cfg.structures={scale:100};if(!cfg.appearance)cfg.appearance={terrainDetail:.75};
+ $('#terrainDetail').value=Math.round(100*(cfg.appearance.terrainDetail??.75));
+ $('#terrainDetailValue').textContent=$('#terrainDetail').value+'%';
+ $('#density').value=cfg.ecosystem.density;$('#densityValue').textContent=cfg.ecosystem.density+'%';$('#layout').textContent='Đảo '+cfg.rx+' × '+cfg.rz+' · '+cfg.sites.length+' điểm công trình';}
 async function init(){
  try{const response=await fetch('./layouts/CanGio_GD4_v2.json',{cache:'no-store'});if(!response.ok)throw Error('HTTP '+response.status);cfg=await response.json();
  if(location.hash.startsWith('#layout=')){try{const val=unpack(location.hash.slice(8));if(valid(val))cfg=lowHuts(val);}catch(e){console.warn('Không thể nhập liên kết:',e);}}
