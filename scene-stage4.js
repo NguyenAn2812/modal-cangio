@@ -53,6 +53,7 @@ const mat={
  wall:new THREE.MeshStandardMaterial({map:mudTex,color:'#c5ad8a',vertexColors:true,roughness:1,side:THREE.DoubleSide}),
  wood:new THREE.MeshStandardMaterial({map:woodTex,color:'#dec7a4',roughness:.89}),
  dark:new THREE.MeshStandardMaterial({map:woodTex,color:'#6b513c',roughness:.98}),
+ underDeck:new THREE.MeshStandardMaterial({color:'#3a2e23',roughness:.97,side:THREE.DoubleSide}),
  bark:new THREE.MeshStandardMaterial({map:barkTex,color:'#c1b394',roughness:1}),
  rope:new THREE.MeshStandardMaterial({color:'#ad9d7a',roughness:1}),
  roof:new THREE.MeshStandardMaterial({map:woodTex,color:'#67533a',roughness:1,side:THREE.DoubleSide}),
@@ -315,6 +316,9 @@ function clipPlankAtFace(poly,node,face){
 }
 function extrudedPlank(g,polygon,y,material){
  if(polygon.length<3)return;
+ let area=0;
+ for(let i=0;i<polygon.length;i++){const p=polygon[i],q=polygon[(i+1)%polygon.length];area+=p.x*q.z-q.x*p.z;}
+ if(Math.abs(area)<.0001)return;
  const shape=new THREE.Shape();
  shape.moveTo(polygon[0].x,polygon[0].z);
  for(let i=1;i<polygon.length;i++)shape.lineTo(polygon[i].x,polygon[i].z);
@@ -338,7 +342,7 @@ function walkway(g,link,c,nodeLookup){
  }
  const geom=new THREE.BufferGeometry();
  geom.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geom.setIndex(faces);geom.computeVertexNormals();
- const under=new THREE.Mesh(geom,new THREE.MeshStandardMaterial({color:'#3a2e23',roughness:.97,side:THREE.DoubleSide}));
+ const under=new THREE.Mesh(geom,mat.underDeck);
  under.receiveShadow=true;g.add(under);
  // Actual planks: locally tangent to the track. They end exactly at each platform face.
  const plankN=Math.max(4,Math.ceil(total/.115));
