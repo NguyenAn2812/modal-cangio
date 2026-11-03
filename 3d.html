@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1813">
+<meta name="description" content="Vòng Xơ Cần Giờ — Trình xem cảnh 3D rừng ngập mặn, giai đoạn 4: vật liệu, nước, ánh sáng.">
+<title>Vòng Xơ Cần Giờ · GD4 lần 2 — Đảo rừng ngập mặn</title>
+<style>
+:root{--bg:#0b1813;--panel:#11231b;--edge:#334d3c;--ink:#edeadd;--muted:#9cac9a;--gold:#d0b486;--accent:#bacb91}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;font:14px/1.5 system-ui,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+body{overflow:hidden}
+button,input{font:inherit}button{border:1px solid #55705a;border-radius:9px;background:#20372a;color:var(--ink);cursor:pointer;padding:9px 12px;transition:background .2s,border-color .2s}
+button:hover{background:#334e38;border-color:#a4bc86}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #c4d69c;outline-offset:3px}
+a{color:#c6d5a5;text-decoration:none}a:hover{text-decoration:underline}
+.app{height:100vh;height:100dvh;display:grid;grid-template-columns:minmax(0,1fr) 327px;grid-template-rows:72px minmax(0,1fr)}
+header{z-index:5;grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 28px;background:#0e2119e8;border-bottom:1px solid #314737}
+.brand{display:flex;gap:14px;align-items:center}.logo{font:30px Georgia,serif;color:#c4d59c}.brandtitle{font:400 21px Georgia,serif;line-height:1.15}.micro{color:#a2b497;font-size:10px;font-weight:650;letter-spacing:.16em;margin-top:5px}
+.nav{display:flex;gap:9px;align-items:center}.nav a{border:1px solid #4e6853;padding:9px 12px;border-radius:8px;font-size:12px;font-weight:600}
+.nav a:hover{background:#1f3529;text-decoration:none}.nav button{font-size:12px}
+#scene{position:relative;min-height:0;overflow:hidden;background:radial-gradient(ellipse at 55% 37%,#23392c 0,#12241b 56%,#09150f 100%)}
+#scene canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}#scene canvas:active{cursor:grabbing}
+.intro{position:absolute;left:3.5%;top:5%;pointer-events:none;max-width:330px;text-shadow:0 1px 15px rgba(0,0,0,.6)}
+.eyebrow{font-size:10px;letter-spacing:.23em;color:#b6c69a;font-weight:700}
+.intro h1{font:400 clamp(28px,3vw,46px)/1.08 Georgia,serif;letter-spacing:-.025em;margin:12px 0 12px}
+.intro em{font-weight:400;color:#bfd0a1}.intro p{font-size:12px;max-width:270px;color:#d1d9c9;line-height:1.7}
+.hint{position:absolute;bottom:15px;left:20px;right:20px;display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:9px;pointer-events:none}
+.hint .pill{background:#0b1b13df;box-shadow:0 8px 30px #0004;border:1px solid #4a6750;border-radius:25px;padding:9px 14px;font-size:11px;color:#d8e3ce}
+.camera{display:flex;gap:6px;pointer-events:auto}.camera button{font-size:11px;background:#0b1b13dc;border-color:#4d6552}
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:#0d2119dc;color:#dce5d2;font:18px Georgia,serif;z-index:4;text-align:center;padding:20px}
+#loading[hidden]{display:none}
+aside{min-height:0;overflow:auto;background:linear-gradient(160deg,#14261d,#0c1c15);border-left:1px solid #354b3a;padding:22px 20px}
+aside h2{font:400 25px Georgia,serif;margin:9px 0 5px}aside p{color:#b2c1ae;font-size:12px;line-height:1.6;margin:0 0 18px}
+.section{border-top:1px solid #314a38;padding-top:18px;margin-top:20px}
+.section h3{font-size:11px;letter-spacing:.17em;text-transform:uppercase;font-weight:700;color:#c4d5a7;margin:0 0 14px}
+.switch{display:flex;align-items:center;gap:10px;margin:10px 0;cursor:pointer;color:#d5dfce;font-size:12px}
+.switch input{accent-color:#aec789;width:16px;height:16px;cursor:pointer}
+.item{display:grid;gap:7px;margin:17px 0}.line{display:flex;justify-content:space-between;gap:12px;font-size:12px}.line output{color:#c4d5a6;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:#b8cf92;cursor:pointer}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions button{font-size:12px;padding:10px 6px}
+.actions button.primary{background:#b7ca93;color:#102016;font-weight:700;border-color:#b7ca93}
+.tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.tag{border:1px solid #3f5e47;color:#bbd1b4;background:#203b2b;border-radius:30px;padding:3px 8px;font-size:10px}
+.status{font-size:11px;color:#aab99f;margin:12px 0 0;min-height:18px}
+.note{margin:16px 0 0;border:1px solid #485b48;background:#172820;padding:12px;border-radius:9px;font-size:11px;line-height:1.65;color:#bed0b6}
+.note strong{color:#e4e8d6}
+footer{margin:20px 0 0;text-align:center;font-size:10px;color:#829986;line-height:1.55}
+input[type=file]{display:none}
+#panel.closed{display:none}#panel.closed~*{display:none}
+#toggleControls{display:none}
+@media(max-width:960px){.app{grid-template-columns:1fr;grid-template-rows:65px minmax(0,1fr)}header{padding:10px 14px}.brandtitle{font-size:18px}.micro{font-size:9px}.nav{gap:5px}.nav a{display:none}.nav button{padding:8px;font-size:11px}aside{position:fixed;z-index:10;top:65px;right:0;bottom:0;width:min(92vw,330px);box-shadow:-12px 0 35px #0008}#toggleControls{display:inline-block}.intro{top:5%;left:5%}.intro h1{font-size:29px}.intro p{max-width:210px}.camera{margin-left:auto}}
+@media(max-width:540px){.intro{max-width:215px}.intro h1{font-size:27px}.hint{left:9px;right:9px;bottom:9px}.hint .pill{display:none}.camera{width:100%;justify-content:center}.camera button{font-size:10px;padding:7px 8px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="logo">❧</div><div><div class="brandtitle">Vòng Xơ Cần Giờ</div><div class="micro">MANGROVE 3D / GIAI ĐOẠN 04 · BẢN B</div></div></div>
+  <nav class="nav"><a href="./studio.html">↗ Sửa mặt bằng</a><button id="edit">Mở Terrain Studio</button><button id="toggleControls" aria-label="Mở bảng chỉnh vật liệu">☰ Tùy chỉnh</button></nav>
+</header>
+<main id="scene" aria-label="Mô hình 3D rừng ngập mặn Cần Giờ dùng Three.js">
+  <div id="loading">Đang tạo địa hình, rừng và vật liệu 3D…</div>
+  <div class="intro"><div class="eyebrow">CẦN GIỜ · RỪNG SÁC · VÀM SÁT</div>
+    <h1>Một lát cắt<br><em>rừng ngập mặn.</em></h1>
+    <p>Bản sửa hình học: lòng lạch nằm dưới mực nước, bờ bùn chuyển tiếp mềm và chỉ có các chòi quan sát thấp.</p>
+  </div>
+  <div class="hint"><span class="pill">↔ Kéo để xoay · Cuộn để phóng to · Hai ngón tay để zoom</span>
+    <div class="camera"><button id="camReset">Góc 3D</button><button id="camTop">Từ trên xuống</button><button id="camNear">Góc gần</button></div></div>
+</main>
+<aside id="panel">
+  <div class="eyebrow">GD4 LẦN 2 · MỞ RỘNG ĐẤT</div>
+  <h2>Bờ lạch & chòi thấp</h2>
+  <p id="layout">Đang tải cấu hình đã chốt…</p>
+  <div class="tags"><span class="tag">Mesh 3D thật</span><span class="tag">Đất bùn</span><span class="tag">Nước lợ</span><span class="tag">5 chòi thấp</span><span class="tag">Cây: <strong id="treeCount">—</strong></span></div>
+  <div class="section"><h3>Lớp cảnh 3D</h3>
+    <label class="switch"><input id="layerForest" type="checkbox" checked> Rừng đước, rễ và cây non</label>
+    <label class="switch"><input id="layerWater" type="checkbox" checked> Nước trong các lạch</label>
+    <label class="switch"><input id="layerStructures" type="checkbox" checked> Cầu gỗ và 5 chòi thấp</label>
+  </div>
+  <div class="section"><h3>Đất bao quanh lạch</h3>
+<div class="item"><div class="line"><label for="landExpand">Mở rộng diện tích đảo</label><output id="landExpandValue">124%</output></div><input type="range" id="landExpand" min="106" max="145" step="1" value="124"></div>
+<div class="item"><div class="line"><label for="waterInset">Thu hẹp mặt nước vào bờ</label><output id="waterInsetValue">76%</output></div><input type="range" id="waterInset" min="48" max="91" step="1" value="76"></div>
+<p style="font-size:11px;color:#adc5b3;line-height:1.6">Giữ nguyên tọa độ các chòi, lạch và tuyến cầu GD3. Chỉ mở rộng viền đảo và vuốt nhỏ hai đầu lạch.</p></div>
+<div class="section"><h3>Địa hình sinh thái</h3>
+ <div class="item"><div class="line"><label for="terrainDetail">Chi tiết bùn, rêu, đá nhỏ</label><output id="terrainDetailValue">75%</output></div><input id="terrainDetail" type="range" min="0" max="100" value="75" step="5"></div>
+ <p style="color:#b8c8b7;font-size:11px">Đất gần nước là bùn ẩm; vùng cao có rêu, lá mục và đá nhỏ rải thưa. Không thêm đá núi lớn.</p>
+</div>
+<div class="section"><h3>Điều chỉnh trực tiếp</h3>
+    <div class="item"><div class="line"><label for="glbTreeCount">Số cây đước GLB</label><output id="glbTreeCountValue">4 cây</output></div><input id="glbTreeCount" type="range" min="1" max="4" step="1" value="4"></div>
+    <p style="font-size:11px;color:#aebdb0">Vị trí 4 cây đã được sắp trên sơ đồ Terrain Studio; giảm số cây nếu máy tải chậm.</p>
+    <div class="item"><div class="line"><label for="density">Cây dựng dự phòng</label><output id="densityValue">140%</output></div><input type="range" id="density" min="20" max="140" step="5" value="140"></div>
+    <div class="item"><div class="line"><label for="light">Cường độ ánh sáng</label><output id="lightValue">66%</output></div><input type="range" id="light" min="0" max="100" value="66"></div>
+    <div class="item"><div class="line"><label for="fog">Sương trong rừng</label><output id="fogValue">24%</output></div><input type="range" id="fog" min="0" max="100" value="24"></div>
+    <div class="actions"><button id="night">Rừng tối</button><button id="dusk" class="primary">Ánh chiều</button></div>
+  </div>
+  <div class="section"><h3>Cấu hình và bản vẽ</h3>
+    <div class="actions"><button id="import">Nhập JSON</button><button id="export">Xuất JSON</button><button id="reset">Khôi phục GD4</button><button id="photo">Chụp PNG</button></div>
+    <input id="jsonInput" type="file" accept=".json,application/json">
+    <p class="status" id="status" role="status">Đang chuẩn bị cảnh…</p>
+  </div>
+  <div class="note"><strong>Asset mới của bạn:</strong> <span id="userAssetStatus">Chưa có gói Red Mangrove / Grey Wood / Rain Ripples trên GitHub.</span></div>
+  <div class="note"><strong>Trạng thái vật liệu:</strong> <span id="materialStatus">Đang kiểm tra texture PBR…</span></div>
+  <div class="note"><strong>GD4 đã sửa lỗi địa hình.</strong> Mở rộng viền đất khoảng 24%, thu mặt nước và làm mềm điểm kết thúc lạch; tăng nhận diện màu bùn–lá–gỗ nhưng vẫn giữ ánh sáng rừng chiều.  Đây là bản dựng WebGL/Three.js để duyệt vật liệu, ánh sáng và khối 3D thực. Khi gói nâng cấp được cài đặt, trang sẽ dùng <strong>model cây đước GLB thật</strong>, gỗ xám, normal gợn nước và cành khô. Nếu gói chưa có, vẫn giữ mô hình dự phòng. Bố cục áp dụng đúng tệp GD3 bạn vừa gửi.</div>
+  <footer>VÒNG XƠ CẦN GIỜ · EURÉKA 2026 · PROTOTYPE
+  <div style="margin-top:9px">Model Red Mangrove © ingdearco · <a href="https://sketchfab.com/3d-models/red-mangrove-tree-e806105d83bc440499495e62bb010f7a" target="_blank" rel="noopener noreferrer">Nguồn cây</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · <a href="./assets/user/ATTRIBUTIONS.md">Ghi công asset</a></div>
+</footer>
+</aside>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module" src="./scene-stage4.js"></script>
+</body>
+</html>
