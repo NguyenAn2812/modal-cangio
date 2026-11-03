@@ -92,11 +92,15 @@ input[type=file]{display:none}
     <input id="jsonInput" type="file" accept=".json,application/json">
     <p class="status" id="status" role="status">Đang chuẩn bị cảnh…</p>
   </div>
+  <div class="note"><strong>Asset mới của bạn:</strong> <span id="userAssetStatus">Chưa có gói Red Mangrove / Grey Wood / Rain Ripples trên GitHub.</span></div>
   <div class="note"><strong>Trạng thái vật liệu:</strong> <span id="materialStatus">Đang kiểm tra texture PBR…</span></div>
-  <div class="note"><strong>GD4 đã sửa lỗi địa hình.</strong> Mở rộng viền đất khoảng 24%, thu mặt nước và làm mềm điểm kết thúc lạch; tăng nhận diện màu bùn–lá–gỗ nhưng vẫn giữ ánh sáng rừng chiều.  Đây là bản dựng WebGL/Three.js để duyệt vật liệu, ánh sáng và khối 3D thực. Cây và bề mặt đang dùng hình học cùng texture tạo bằng mã, <strong>chưa phải model GLB quét thật</strong>. Bố cục áp dụng đúng tệp GD3 bạn vừa gửi.</div>
-  <footer>VÒNG XƠ CẦN GIỜ · EURÉKA 2026 · PROTOTYPE</footer>
+  <div class="note"><strong>GD4 đã sửa lỗi địa hình.</strong> Mở rộng viền đất khoảng 24%, thu mặt nước và làm mềm điểm kết thúc lạch; tăng nhận diện màu bùn–lá–gỗ nhưng vẫn giữ ánh sáng rừng chiều.  Đây là bản dựng WebGL/Three.js để duyệt vật liệu, ánh sáng và khối 3D thực. Khi gói nâng cấp được cài đặt, trang sẽ dùng <strong>model cây đước GLB thật</strong>, gỗ xám, normal gợn nước và cành khô. Nếu gói chưa có, vẫn giữ mô hình dự phòng. Bố cục áp dụng đúng tệp GD3 bạn vừa gửi.</div>
+  <footer>VÒNG XƠ CẦN GIỜ · EURÉKA 2026 · PROTOTYPE
+  <div style="margin-top:9px">Model Red Mangrove © ingdearco · <a href="https://sketchfab.com/3d-models/red-mangrove-tree-e806105d83bc440499495e62bb010f7a" target="_blank" rel="noopener noreferrer">Nguồn cây</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · <a href="./assets/user/ATTRIBUTIONS.md">Ghi công asset</a></div>
+</footer>
 </aside>
 </div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module" src="./scene-stage4.js"></script>
 </body>
 </html>
