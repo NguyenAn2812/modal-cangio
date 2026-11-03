@@ -1,146 +1,97 @@
 <!doctype html>
 <html lang="vi">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Vòng Xơ Cần Giờ · Mangrove Studio / Giai đoạn 03</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1813">
+<meta name="description" content="Vòng Xơ Cần Giờ — Trình xem cảnh 3D rừng ngập mặn, giai đoạn 4: vật liệu, nước, ánh sáng.">
+<title>Vòng Xơ Cần Giờ · Rừng ngập mặn 3D · Giai đoạn 04</title>
 <style>
-:root{--bg:#07130f;--panel:#112019;--panel2:#152820;--line:#30473a;--ink:#e9e8d9;--muted:#9aab99;--accent:#b4c88d;--mud:#76624a;--water:#416f68;--gold:#dbba82;--pink:#d1b1a0}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px 'Segoe UI',system-ui,Arial,sans-serif}button,input,select{font:inherit}button{color:inherit;cursor:pointer;border:1px solid var(--line);background:#1b3025;border-radius:9px;padding:9px 12px}button:hover{background:#294b38;border-color:#688462}button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button.active{background:#405b3e;color:#f3f5e6;border-color:#95b584}button.primary{background:#b4c88d;color:#102218;font-weight:700;border-color:#b4c88d}button.ghost{background:transparent}small,.tiny{font-size:11px}.tiny{color:var(--muted)}.app{display:grid;grid-template-columns:minmax(0,1fr) 350px;grid-template-rows:auto minmax(0,1fr);height:100vh;min-height:700px}.topbar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 25px;background:var(--panel);border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:13px}.brandmark{width:36px;height:36px;border:1px solid #5c8066;display:grid;place-items:center;color:var(--accent);border-radius:100%;font-size:22px}.name{font:500 20px Georgia,serif;letter-spacing:.01em}.sub{letter-spacing:.19em;color:#9eae96;font-size:10px;margin-top:3px}.tools{display:flex;flex-wrap:wrap;gap:7px;align-items:center}.main{min-height:0;position:relative;overflow:hidden;background:#0d1e18}.main::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#21392e 0,#12261e 43%,#081611 83%);pointer-events:none}.main canvas{display:block;width:100%;height:100%;position:relative;cursor:grab;touch-action:none}.main canvas:active{cursor:grabbing}.viewHead{position:absolute;top:26px;left:28px;pointer-events:none;max-width:420px}.eyebrow{color:#9fb99a;letter-spacing:.2em;font-size:10px;font-weight:600}.viewHead h1{font:400 clamp(28px,3.2vw,48px)/1.05 Georgia,serif;max-width:420px;margin:12px 0 8px}.viewHead p{max-width:390px;line-height:1.6;color:#b4c7b5;font-size:12px}.viewFoot{position:absolute;bottom:20px;left:28px;right:28px;display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;pointer-events:none}.viewFoot>*{pointer-events:auto}.pill{background:#152820d9;border:1px solid #3d5e48;border-radius:24px;padding:9px 14px;font-size:11px;color:#c3d2bc}.rotate{display:flex;gap:7px}.side{height:100%;overflow-y:auto;background:var(--panel);border-left:1px solid var(--line);padding:18px 16px 30px}.side h2{font:400 24px Georgia,serif;margin:1px 0 8px}.side .lead{line-height:1.5;color:var(--muted);font-size:12px;margin:0 0 18px}.section{border-top:1px solid var(--line);padding-top:17px;margin-top:17px}.section h3{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}.map{background:#e9eddf;border-radius:12px;border:1px solid #5c7460;overflow:hidden;position:relative}.map svg{width:100%;display:block;touch-action:none;user-select:none}.map .handle{cursor:grab;stroke:#fff;stroke-width:1.5}.map .handle:active{cursor:grabbing}.map .grabtext{font:600 9px 'Segoe UI',sans-serif;pointer-events:none}.mapHint{display:flex;align-items:center;gap:6px;color:#bed1bf;margin:9px 0 0;font-size:11px}.legend{display:flex;flex-wrap:wrap;gap:11px;margin:10px 0 0}.legend span{font-size:10px;color:#b9c9b5;display:flex;align-items:center;gap:5px}.sw{width:9px;height:9px;display:inline-block;border-radius:50%}.slider{margin:12px 0}.slider .line{display:flex;justify-content:space-between;margin-bottom:6px;color:#d6e0d1;font-size:12px}.slider output{color:var(--accent);font-variant-numeric:tabular-nums}.slider input{width:100%;accent-color:#afc580}.switches{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.switches label{display:flex;align-items:center;gap:6px;font-size:11px;color:#d1dbc9;cursor:pointer}.switches input{accent-color:#b4c88d}.choice{display:grid;grid-template-columns:1fr 1fr;gap:7px}.choice button{font-size:11px;padding:8px 6px}.summary{font-size:12px;line-height:1.6;color:#bacbb8;background:#182d22;padding:12px;border:1px solid var(--line);border-radius:10px}.tip{font-size:11px;color:#94a892;line-height:1.6;margin-top:10px}.status{color:#a9bd9b;font-size:11px;white-space:nowrap}.warning{border:1px solid #9b7c44;background:#382d19;color:#f4daaa;border-radius:8px;padding:12px;margin-top:12px;font-size:12px}.hidden{display:none!important}.fileInput{display:none}footer{color:#95a990;font-size:10px;text-align:center;margin:20px auto 5px;line-height:1.6}
-@media(max-width:950px){.app{height:auto;min-height:100vh;grid-template-columns:1fr;grid-template-rows:auto minmax(440px,62vh) auto}.topbar{flex-wrap:wrap;padding:13px 16px}.side{border-left:none;border-top:1px solid var(--line);height:auto;overflow:visible}.viewHead{top:20px;left:18px}.viewHead h1{font-size:33px}.viewFoot{left:14px;right:14px;bottom:12px}.main{height:max(440px,62vh)}.tools{gap:6px}.topbar button{padding:7px 9px}}
+:root{--bg:#0b1813;--panel:#11231b;--edge:#334d3c;--ink:#edeadd;--muted:#9cac9a;--gold:#d0b486;--accent:#bacb91}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;font:14px/1.5 system-ui,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+body{overflow:hidden}
+button,input{font:inherit}button{border:1px solid #55705a;border-radius:9px;background:#20372a;color:var(--ink);cursor:pointer;padding:9px 12px;transition:background .2s,border-color .2s}
+button:hover{background:#334e38;border-color:#a4bc86}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #c4d69c;outline-offset:3px}
+a{color:#c6d5a5;text-decoration:none}a:hover{text-decoration:underline}
+.app{height:100vh;height:100dvh;display:grid;grid-template-columns:minmax(0,1fr) 327px;grid-template-rows:72px minmax(0,1fr)}
+header{z-index:5;grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 28px;background:#0e2119e8;border-bottom:1px solid #314737}
+.brand{display:flex;gap:14px;align-items:center}.logo{font:30px Georgia,serif;color:#c4d59c}.brandtitle{font:400 21px Georgia,serif;line-height:1.15}.micro{color:#a2b497;font-size:10px;font-weight:650;letter-spacing:.16em;margin-top:5px}
+.nav{display:flex;gap:9px;align-items:center}.nav a{border:1px solid #4e6853;padding:9px 12px;border-radius:8px;font-size:12px;font-weight:600}
+.nav a:hover{background:#1f3529;text-decoration:none}.nav button{font-size:12px}
+#scene{position:relative;min-height:0;overflow:hidden;background:radial-gradient(ellipse at 55% 37%,#23392c 0,#12241b 56%,#09150f 100%)}
+#scene canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}#scene canvas:active{cursor:grabbing}
+.intro{position:absolute;left:3.5%;top:5%;pointer-events:none;max-width:330px;text-shadow:0 1px 15px rgba(0,0,0,.6)}
+.eyebrow{font-size:10px;letter-spacing:.23em;color:#b6c69a;font-weight:700}
+.intro h1{font:400 clamp(28px,3vw,46px)/1.08 Georgia,serif;letter-spacing:-.025em;margin:12px 0 12px}
+.intro em{font-weight:400;color:#bfd0a1}.intro p{font-size:12px;max-width:270px;color:#d1d9c9;line-height:1.7}
+.hint{position:absolute;bottom:15px;left:20px;right:20px;display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:9px;pointer-events:none}
+.hint .pill{background:#0b1b13df;box-shadow:0 8px 30px #0004;border:1px solid #4a6750;border-radius:25px;padding:9px 14px;font-size:11px;color:#d8e3ce}
+.camera{display:flex;gap:6px;pointer-events:auto}.camera button{font-size:11px;background:#0b1b13dc;border-color:#4d6552}
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:#0d2119dc;color:#dce5d2;font:18px Georgia,serif;z-index:4;text-align:center;padding:20px}
+#loading[hidden]{display:none}
+aside{min-height:0;overflow:auto;background:linear-gradient(160deg,#14261d,#0c1c15);border-left:1px solid #354b3a;padding:22px 20px}
+aside h2{font:400 25px Georgia,serif;margin:9px 0 5px}aside p{color:#b2c1ae;font-size:12px;line-height:1.6;margin:0 0 18px}
+.section{border-top:1px solid #314a38;padding-top:18px;margin-top:20px}
+.section h3{font-size:11px;letter-spacing:.17em;text-transform:uppercase;font-weight:700;color:#c4d5a7;margin:0 0 14px}
+.switch{display:flex;align-items:center;gap:10px;margin:10px 0;cursor:pointer;color:#d5dfce;font-size:12px}
+.switch input{accent-color:#aec789;width:16px;height:16px;cursor:pointer}
+.item{display:grid;gap:7px;margin:17px 0}.line{display:flex;justify-content:space-between;gap:12px;font-size:12px}.line output{color:#c4d5a6;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:#b8cf92;cursor:pointer}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions button{font-size:12px;padding:10px 6px}
+.actions button.primary{background:#b7ca93;color:#102016;font-weight:700;border-color:#b7ca93}
+.tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.tag{border:1px solid #3f5e47;color:#bbd1b4;background:#203b2b;border-radius:30px;padding:3px 8px;font-size:10px}
+.status{font-size:11px;color:#aab99f;margin:12px 0 0;min-height:18px}
+.note{margin:16px 0 0;border:1px solid #485b48;background:#172820;padding:12px;border-radius:9px;font-size:11px;line-height:1.65;color:#bed0b6}
+.note strong{color:#e4e8d6}
+footer{margin:20px 0 0;text-align:center;font-size:10px;color:#829986;line-height:1.55}
+input[type=file]{display:none}
+#panel.closed{display:none}#panel.closed~*{display:none}
+#toggleControls{display:none}
+@media(max-width:960px){.app{grid-template-columns:1fr;grid-template-rows:65px minmax(0,1fr)}header{padding:10px 14px}.brandtitle{font-size:18px}.micro{font-size:9px}.nav{gap:5px}.nav a{display:none}.nav button{padding:8px;font-size:11px}aside{position:fixed;z-index:10;top:65px;right:0;bottom:0;width:min(92vw,330px);box-shadow:-12px 0 35px #0008}#toggleControls{display:inline-block}.intro{top:5%;left:5%}.intro h1{font-size:29px}.intro p{max-width:210px}.camera{margin-left:auto}}
+@media(max-width:540px){.intro{max-width:215px}.intro h1{font-size:27px}.hint{left:9px;right:9px;bottom:9px}.hint .pill{display:none}.camera{width:100%;justify-content:center}.camera button{font-size:10px;padding:7px 8px}}
 </style>
 </head>
 <body>
 <div class="app">
-<header class="topbar"><div class="brand"><div class="brandmark">❧</div><div><div class="name">Vòng Xơ Cần Giờ · Terrain Studio</div><div class="sub">BẢN GD1 ĐÃ CHỐT · GIAI ĐOẠN 03 / CẦU GỖ VÀ CHÒI</div></div></div>
-<div class="tools"><span class="status" id="saveStatus">Giai đoạn 3 · Bản nháp tự lưu</span><button id="saveBtn" class="primary">Lưu thay đổi</button><button id="shareBtn">Sao chép liên kết</button><button id="exportBtn">Xuất thiết kế JSON</button><button id="importBtn">Nhập JSON</button><button id="resetBtn" class="ghost">Khôi phục GD1 &amp; mật độ rừng</button><input id="importInput" class="fileInput" type="file" accept=".json,application/json"></div></header>
-<main class="main" id="viewport"><canvas id="view" aria-label="Góc nhìn 3D mô phỏng địa hình đảo Cần Giờ, kéo chuột để xoay, cuộn để phóng to"></canvas><div class="viewHead"><div class="eyebrow">CẦN GIỜ · RỪNG SÁC · VÀM SÁT</div><h1>Lối đi giữa<br><em>rừng đước.</em></h1><p>Giai đoạn 3: cầu gỗ nối các chòi, đài quan sát và tháp cao, với cọc đỡ, lan can và mái gỗ. Tất cả giữ nguyên vị trí GD1; điều chỉnh công trình ở bảng bên phải.</p></div><div class="viewFoot"><div class="pill">↔ Kéo xoay · Cuộn phóng to · Sửa vị trí ở mặt bằng bên phải</div><div class="rotate"><button id="viewIso" class="active">Góc 3D</button><button id="viewTop">Từ trên xuống</button><button id="viewReset">Đặt lại camera</button></div></div></main>
-<aside class="side"><div><div class="eyebrow">BẢN THIẾT KẾ ĐANG CHỈNH SỬA</div><h2>Mặt bằng tổng thể</h2><p class="lead">Kéo các chấm trên sơ đồ để thay đổi đường lạch hoặc vị trí công trình. Mọi thay đổi được cập nhật ngay lên khối đảo.</p></div>
-<div class="map" id="map"><svg id="mapSvg" viewBox="0 0 340 272" aria-label="Bản đồ kéo thả điều chỉnh vị trí lạch nước và công trình"></svg></div>
-<div class="legend"><span><i class="sw" style="background:#41827c"></i>Lạch nước</span><span><i class="sw" style="background:#c78b56"></i>Lối đi</span><span><i class="sw" style="background:#bd6f43"></i>Chòi</span><span><i class="sw" style="background:#3b6848"></i>Tháp</span></div><p class="mapHint">◎ Chọn “Sông rạch” hoặc “Công trình” rồi kéo chấm điều chỉnh.</p>
-<div class="section"><h3>Chế độ chỉnh sửa sơ đồ</h3><div class="choice"><button id="editWater" class="active">~ Sông rạch</button><button id="editSites">⌂ Công trình</button></div></div>
-<div class="section"><h3>Thông số địa hình</h3><div id="sliders"></div></div>
-<div class="section" id="ecosystemSection">
-<h3>Giai đoạn 02 · Thực vật ngập mặn</h3>
-<p class="lead" style="margin:0 0 10px">Mô hình tán cây, rễ chống và thảm cây non dựng từ mã, dùng để chốt mật độ trước khi thay bằng GLB thật.</p>
-<div class="slider"><div class="line"><label for="ecoDensity">Mật độ cây</label><output id="ecoDensityValue">75%</output></div><input id="ecoDensity" type="range" min="20" max="140" step="5" value="75"></div>
-<div class="slider"><div class="line"><label for="ecoHeight">Chiều cao tán cây</label><output id="ecoHeightValue">100%</output></div><input id="ecoHeight" type="range" min="55" max="155" step="5" value="100"></div>
-<div class="switches" style="margin-top:8px">
-<label><input type="checkbox" data-layer="forest" checked> Rừng đước &amp; cây mắm</label>
-<label><input type="checkbox" data-layer="roots" checked> Rễ chống &amp; rễ thở</label>
-<label><input type="checkbox" data-layer="understory" checked> Cây non &amp; bụi thấp</label>
+<header>
+  <div class="brand"><div class="logo">❧</div><div><div class="brandtitle">Vòng Xơ Cần Giờ</div><div class="micro">MANGROVE 3D / GIAI ĐOẠN 04</div></div></div>
+  <nav class="nav"><a href="./studio.html">↗ Sửa mặt bằng</a><button id="edit">Mở Terrain Studio</button><button id="toggleControls" aria-label="Mở bảng chỉnh vật liệu">☰ Tùy chỉnh</button></nav>
+</header>
+<main id="scene" aria-label="Mô hình 3D rừng ngập mặn Cần Giờ dùng Three.js">
+  <div id="loading">Đang tạo địa hình, rừng và vật liệu 3D…</div>
+  <div class="intro"><div class="eyebrow">CẦN GIỜ · RỪNG SÁC · VÀM SÁT</div>
+    <h1>Một lát cắt<br><em>rừng ngập mặn.</em></h1>
+    <p>Đảo 3D thử nghiệm: rừng đước, bờ bùn, lạch nước lợ, cầu gỗ và các điểm quan sát.</p>
+  </div>
+  <div class="hint"><span class="pill">↔ Kéo để xoay · Cuộn để phóng to · Hai ngón tay để zoom</span>
+    <div class="camera"><button id="camReset">Góc 3D</button><button id="camTop">Từ trên xuống</button><button id="camNear">Góc gần</button></div></div>
+</main>
+<aside id="panel">
+  <div class="eyebrow">BẢN GD3 ĐÃ DUYỆT</div>
+  <h2>Vật liệu và ánh sáng</h2>
+  <p id="layout">Đang tải cấu hình đã chốt…</p>
+  <div class="tags"><span class="tag">Mesh 3D thật</span><span class="tag">Đất bùn</span><span class="tag">Nước lợ</span><span class="tag">Gỗ cũ</span></div>
+  <div class="section"><h3>Lớp cảnh 3D</h3>
+    <label class="switch"><input id="layerForest" type="checkbox" checked> Rừng đước, rễ và cây non</label>
+    <label class="switch"><input id="layerWater" type="checkbox" checked> Nước trong các lạch</label>
+    <label class="switch"><input id="layerStructures" type="checkbox" checked> Cầu gỗ, 4 chòi và tháp</label>
+  </div>
+  <div class="section"><h3>Điều chỉnh trực tiếp</h3>
+    <div class="item"><div class="line"><label for="density">Mật độ rừng</label><output id="densityValue">140%</output></div><input type="range" id="density" min="20" max="140" step="5" value="140"></div>
+    <div class="item"><div class="line"><label for="light">Cường độ ánh sáng</label><output id="lightValue">72%</output></div><input type="range" id="light" min="0" max="100" value="72"></div>
+    <div class="item"><div class="line"><label for="fog">Sương trong rừng</label><output id="fogValue">32%</output></div><input type="range" id="fog" min="0" max="100" value="32"></div>
+    <div class="actions"><button id="night">Rừng tối</button><button id="dusk" class="primary">Ánh chiều</button></div>
+  </div>
+  <div class="section"><h3>Cấu hình và bản vẽ</h3>
+    <div class="actions"><button id="import">Nhập JSON</button><button id="export">Xuất JSON</button><button id="reset">Khôi phục GD3</button><button id="photo">Chụp PNG</button></div>
+    <input id="jsonInput" type="file" accept=".json,application/json">
+    <p class="status" id="status" role="status">Đang chuẩn bị cảnh…</p>
+  </div>
+  <div class="note"><strong>Phạm vi Giai đoạn 4.</strong> Đây là bản dựng WebGL/Three.js để duyệt vật liệu, ánh sáng và khối 3D thực. Cây và bề mặt đang dùng hình học cùng texture tạo bằng mã, <strong>chưa phải model GLB quét thật</strong>. Bố cục áp dụng đúng tệp GD3 bạn vừa gửi.</div>
+  <footer>VÒNG XƠ CẦN GIỜ · EURÉKA 2026 · PROTOTYPE</footer>
+</aside>
 </div>
-<p class="tiny" style="line-height:1.5;margin-top:10px">Bật/tắt từng lớp để kiểm tra bố cục. Các mô hình này là mô phỏng hình học, chưa phải model quét PBR.</p>
-</div>
-<div class="section" id="structuresSection">
-<h3>Giai đoạn 03 · Cầu gỗ &amp; công trình</h3>
-<p class="lead" style="margin:0 0 10px">Giữ nguyên các điểm GD1. Chỉnh tỷ lệ chòi/tháp và hiện hoặc ẩn các chi tiết kiến trúc.</p>
-<div class="slider"><div class="line"><label for="structureScale">Tỷ lệ chòi &amp; tháp</label><output id="structureScaleValue">100%</output></div><input id="structureScale" type="range" min="75" max="135" step="5" value="100"></div>
-<div class="switches" style="margin-top:8px">
-<label><input type="checkbox" data-structure="railings" checked> Lan can gỗ &amp; dây thừng</label>
-<label><input type="checkbox" data-structure="piles" checked> Cọc và chân đỡ cầu</label>
-<label><input type="checkbox" data-structure="spurs" checked> Lối nhánh và sàn ngắm nước</label>
-<label><input type="checkbox" data-structure="roofs" checked> Mái chòi &amp; mái tháp</label>
-</div>
-<p class="tiny" style="line-height:1.55;margin-top:10px">Bật “Công trình” và “Đường đi” ở mục lớp hiển thị phía dưới. Đổi vị trí công trình bằng chế độ kéo thả trên sơ đồ.</p>
-</div>
-<div class="section"><h3>Hiện / ẩn các lớp</h3><div class="switches"><label><input type="checkbox" data-layer="land" checked> Khối đất</label><label><input type="checkbox" data-layer="water" checked> Lạch nước</label><label><input type="checkbox" data-layer="walk" checked> Đường đi</label><label><input type="checkbox" data-layer="sites" checked> Công trình</label><label><input type="checkbox" data-layer="zones"> Vùng trồng rừng (sơ đồ)</label><label><input type="checkbox" data-layer="labels" checked> Nhãn khu vực</label></div></div>
-<div class="section"><h3>Ghi chú thiết kế</h3><div class="summary"><strong>Bố cục GD1 đã duyệt:</strong> một khối đảo, ba tuyến lạch, bốn chòi và một tháp. <strong>GĐ3:</strong> thay hình khối công trình bằng cầu gỗ chia ván, lan can, cọc, sàn nghỉ, chòi mái dốc và tháp có cầu thang. Đây là hình chiếu Canvas 2.5D, chưa phải mesh GLB hay bản quy hoạch thực địa.</div><p class="tip">Thay đổi sẽ tự lưu trên trình duyệt hiện tại. Để gửi bố cục cho mình xem hoặc làm việc trên máy khác, hãy dùng <strong>Xuất thiết kế JSON</strong>. File JSON chỉ chứa thông số và tọa độ, không chứa model 3D.</p></div><footer>Vòng Xơ Cần Giờ · Terrain Studio · Giai đoạn 03<br>Chưa phải mô hình địa lý chính xác hoặc quy hoạch xây dựng thực tế.</footer></aside>
-</div>
-<script src="./forest-stage2.js"></script>
-<script src="./structures-stage3.js"></script>
-<script>
-(()=>{'use strict';
-const KEY='vong-xo-terrain-studio-stage2-v1'; // Giữ nguyên localStorage GĐ1 như bản sao lưu
-const DEFAULT={"rx":4.5,"rz":5,"thickness":2,"bank":0.3,"mainWidth":0.41,"branchWidth":0.42,"meander":0,"bridgeWidth":0.32,"sites":[{"id":"entry","name":"Lối vào","type":"entry","x":-0.9,"z":0.75},{"id":"hut1","name":"Chòi 1","type":"hut","x":-0.58,"z":0.38},{"id":"hut2","name":"Chòi 2","type":"hut","x":-0.5,"z":-0.36},{"id":"hut3","name":"Chòi 3","type":"hut","x":0.27,"z":-0.67},{"id":"tower","name":"Tháp","type":"tower","x":0.77,"z":-0.46},{"id":"hut4","name":"Chòi 4","type":"hut","x":0.69,"z":0.45}],"water":{"main":[{"x":-0.18,"z":-1.22},{"x":-0.02,"z":-0.65},{"x":0.1,"z":-0.15},{"x":-0.13,"z":0.4},{"x":0.12,"z":0.78},{"x":0.08,"z":1.21}],"west":[{"x":-1.1,"z":-0.14},{"x":-0.76,"z":-0.24},{"x":-0.48,"z":-0.06},{"x":-0.04,"z":0.04}],"east":[{"x":0.04,"z":0.37},{"x":0.39,"z":0.12},{"x":0.74,"z":-0.06},{"x":1.12,"z":-0.14}]}};
-const clone=v=>JSON.parse(JSON.stringify(v));
-function valid(c){return c&&typeof c.rx==='number'&&typeof c.rz==='number'&&Array.isArray(c.sites)&&c.water&&Array.isArray(c.water.main)&&c.water.main.length>=4&&Array.isArray(c.water.west)&&Array.isArray(c.water.east)}
-let config=clone(DEFAULT);try{const p=JSON.parse(localStorage.getItem(KEY)||'null');if(valid(p))config=p}catch(e){}
-function decodeLayout(token){const str=atob(token.replace(/-/g,'+').replace(/_/g,'/')),b=new Uint8Array(str.length);for(let i=0;i<str.length;i++)b[i]=str.charCodeAt(i);return JSON.parse(new TextDecoder().decode(b))}
-try{if(location.hash.startsWith('#layout=')){const p=decodeLayout(location.hash.slice(8));if(valid(p))config=p}}catch(e){console.warn('Bố cục trong đường dẫn không hợp lệ',e)}
-if(!config.ecosystem)config.ecosystem={density:75,height:100,forest:true,roots:true,understory:true};
-if(!config.structures)config.structures={scale:100,railings:true,piles:true,spurs:true,roofs:true};
-const layers={land:true,water:true,walk:true,sites:true,zones:false,labels:true,forest:true,roots:true,understory:true};let mode='water',yaw=-.73,elev=.53,scale=51,drag=false,lastX=0,lastY=0,dragHandle=null,geomCache=null,screenCache=null,dirty=true,frameId=0;
-const el=id=>document.getElementById(id),view=el('view'),ctx=view.getContext('2d'),svg=el('mapSvg');
-const sliders=[['rx','Chiều rộng đảo',4.5,7.5,.1,'u'],['rz','Chiều dài đảo',3.2,6,.1,'u'],['thickness','Độ dày đất',.9,3.6,.1,'u'],['bank','Bờ bùn ven lạch',.3,1.2,.05,'u'],['mainWidth','Rộng lạch chính',.36,1.25,.05,'u'],['branchWidth','Rộng nhánh phụ',.22,.9,.04,'u'],['meander','Độ uốn lượn',0,1.2,.05,''],['bridgeWidth','Rộng đường đi',.16,.55,.02,'u']];
-function createSliders(){el('sliders').innerHTML=sliders.map(([key,label,min,max,step,unit])=>`<div class="slider"><div class="line"><label for="${key}">${label}</label><output id="out_${key}">${config[key].toFixed(2)} ${unit}</output></div><input id="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${config[key]}"></div>`).join('');sliders.forEach(([key,, ,,,unit])=>{el(key).addEventListener('input',e=>{config[key]=Number(e.target.value);el('out_'+key).textContent=config[key].toFixed(2)+' '+unit;changed();})})}
-function syncEco(){if(!config.ecosystem)config.ecosystem={density:75,height:100,forest:true,roots:true,understory:true};
-for(const name of ['forest','roots','understory']){if(config.ecosystem[name]===undefined)config.ecosystem[name]=true;layers[name]=config.ecosystem[name];const c=document.querySelector('[data-layer="'+name+'"]');if(c)c.checked=layers[name];}for(const [id,key] of [['ecoDensity','density'],['ecoHeight','height']]){const i=el(id);if(!i)continue;i.value=config.ecosystem[key];el(id+'Value').textContent=config.ecosystem[key]+'%';}}
-for(const [id,key] of [['ecoDensity','density'],['ecoHeight','height']]){const input=el(id);if(input)input.addEventListener('input',()=>{config.ecosystem[key]=Number(input.value);el(id+'Value').textContent=input.value+'%';changed();});}
-function syncStructures(){
- if(!config.structures)config.structures={scale:100,railings:true,piles:true,spurs:true,roofs:true};
- let st=config.structures;
- const inp=el('structureScale');if(inp){inp.value=st.scale??100;el('structureScaleValue').textContent=(st.scale??100)+'%';}
- for(const name of ['railings','piles','spurs','roofs']){if(st[name]===undefined)st[name]=true;const chk=document.querySelector('[data-structure="'+name+'"]');if(chk)chk.checked=st[name];}
-}
-const structScaleInput=el('structureScale');
-structScaleInput.addEventListener('input',()=>{config.structures.scale=Number(structScaleInput.value);el('structureScaleValue').textContent=structScaleInput.value+'%';changed();});
-document.querySelectorAll('[data-structure]').forEach(chk=>chk.addEventListener('change',()=>{config.structures[chk.dataset.structure]=chk.checked;changed();}));
-function changed(){dirty=true;el('saveStatus').textContent='Đang có thay đổi';schedule();drawMap();try{localStorage.setItem(KEY,JSON.stringify(config));el('saveStatus').textContent='Đã tự lưu trong trình duyệt'}catch(e){}}
-function resetSliders(){sliders.forEach(([key,,,,,unit])=>{el(key).value=config[key];el('out_'+key).textContent=Number(config[key]).toFixed(2)+' '+unit})}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(config));el('saveStatus').textContent='Đã lưu thành công'}catch(e){alert('Không lưu được trên trình duyệt này. Hãy dùng Xuất JSON.')};}
-el('saveBtn').onclick=save;el('resetBtn').onclick=()=>{if(!confirm('Khôi phục GD1 gốc và thông số cây mặc định? Các thay đổi chưa xuất JSON sẽ bị thay thế.'))return;config=clone(DEFAULT);config.ecosystem={density:75,height:100,forest:true,roots:true,understory:true};config.structures={scale:100,railings:true,piles:true,spurs:true,roofs:true};resetSliders();syncEco();syncStructures();changed();};
-el('shareBtn').onclick=async()=>{if(location.protocol==='file:'){alert('Liên kết chia sẻ cần một website cố định, ví dụ GitHub Pages. Hiện tại hãy chọn Xuất thiết kế JSON.');return;}let b=new TextEncoder().encode(JSON.stringify(config)),bin='';for(let v of b)bin+=String.fromCharCode(v);let str=btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');let link=location.origin+location.pathname+'#layout='+str;try{await navigator.clipboard.writeText(link);el('saveStatus').textContent='Đã sao chép liên kết để chia sẻ'}catch(e){prompt('Sao chép liên kết thiết kế:',link)}};
-el('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify({...config,_project:'Vong Xo Can Gio',_version:'stage-3',_unit:'conceptual'},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download='CanGio_CongTrinh_GD3.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),300)};
-el('importBtn').onclick=()=>el('importInput').click();el('importInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{let val=JSON.parse(await f.text());if(!valid(val))throw Error('Tệp không đúng định dạng Terrain Studio');config=val;if(!config.ecosystem)config.ecosystem={density:75,height:100,forest:true,roots:true,understory:true};if(!config.structures)config.structures={scale:100,railings:true,piles:true,spurs:true,roofs:true};resetSliders();syncEco();syncStructures();changed();alert('Đã nhập bản thiết kế.')}catch(e){alert('Không thể nhập: '+e.message)}e.target.value=''};
-el('editWater').onclick=()=>setMode('water');el('editSites').onclick=()=>setMode('sites');function setMode(m){mode=m;el('editWater').classList.toggle('active',m==='water');el('editSites').classList.toggle('active',m==='sites');drawMap()}
-document.querySelectorAll('[data-layer]').forEach(x=>x.addEventListener('change',e=>{const name=e.target.dataset.layer;layers[name]=e.target.checked;if(['forest','roots','understory'].includes(name)){config.ecosystem[name]=e.target.checked;changed();}else{schedule();}if(name==='forest')drawMap();}));
-const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t,TAU=Math.PI*2;
-function catmull(points, steps=12){let out=[];for(let i=0;i<points.length-1;i++){let p0=points[Math.max(0,i-1)],p1=points[i],p2=points[i+1],p3=points[Math.min(points.length-1,i+2)];for(let j=0;j<steps;j++){let t=j/steps,t2=t*t,t3=t2*t;let f=k=>.5*((2*p1[k])+(-p0[k]+p2[k])*t+(2*p0[k]-5*p1[k]+4*p2[k]-p3[k])*t2+(-p0[k]+3*p1[k]-3*p2[k]+p3[k])*t3);out.push({x:f('x'),z:f('z')})}}out.push(points.at(-1));return out}
-function channels(){let c=config, transform=pts=>catmull(pts.map(p=>({x:p.x*c.rx +Math.sin(p.z*5)*c.meander*.34,z:p.z*c.rz})),11);return [{id:'main',width:c.mainWidth,pts:transform(c.water.main)},{id:'west',width:c.branchWidth,pts:transform(c.water.west)},{id:'east',width:c.branchWidth,pts:transform(c.water.east)}]}
-function perimeter(a,f=1){let wig=1+.038*Math.sin(5*a+.2)+.032*Math.cos(9*a+.8)+.016*Math.sin(17*a+1);return {x:config.rx*f*wig*Math.cos(a),z:config.rz*f*wig*Math.sin(a)}}
-function noise(x,z){return .42*Math.sin(x*1.2+z*.4)*Math.cos(z*1.56-x*.45)+.28*Math.sin(x*2.9-z*1.4)+.18*Math.cos(x*4.2+z*3.3)}
-function closest(x,z,ch){let best=1e6;for(const seg of ch){for(let i=0;i<seg.pts.length-1;i++){let a=seg.pts[i],b=seg.pts[i+1],dx=b.x-a.x,dz=b.z-a.z,t=clamp(((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz+1e-9),0,1);let d=Math.hypot(x-a.x-t*dx,z-a.z-t*dz)/seg.width;best=Math.min(best,d)}}return best}
-function topo(x,z,ch){let d=closest(x,z,ch),r=Math.sqrt((x/config.rx)**2+(z/config.rz)**2),rough=noise(x,z);let y=1.22+.15*rough-.16*Math.max(0,r-.78)-.59*Math.pow(Math.max(0,1-d/(.55+config.bank*2.15)),1.65);return {y, d,r,rough}}
-const shades={ground:'#53654a',bank:'#695640',creek:'#2b6865',cliff:'#514c3d',side:'#625641'};
-function createGeometry(){let ch=channels(),g=[],r0=35,s0=132;for(let r=0;r<=r0;r++)for(let j=0;j<=s0;j++){let f=r/r0,a=j/s0*TAU,p=perimeter(a,f),t=topo(p.x,p.z,ch);g.push({x:p.x,y:t.y,z:p.z,water:t.d<.92,bank:t.d<1.3+config.bank*1.45,shade:t.rough,r:t.r})}const faces=[];for(let r=0;r<r0;r++)for(let j=0;j<s0;j++){let a=r*(s0+1)+j,b=a+s0+1;faces.push([g[a],g[b],g[b+1],g[a+1]])}const cliff=[];let rings=[1,.99,.96,.90,.80,.61,.39,.15],ys=[0,-.23,-.52,-.91,-1.38,-1.72,-2.05,-2.23];for(let k=0;k<rings.length-1;k++)for(let j=0;j<s0;j++){let a=j/s0*TAU,b=(j+1)/s0*TAU;let top0=perimeter(a,rings[k]),top1=perimeter(b,rings[k]),bot0=perimeter(a,rings[k+1]),bot1=perimeter(b,rings[k+1]);let y0=k===0?topo(top0.x,top0.z,ch).y:1.04+ys[k]*config.thickness/2,y1=k===0?topo(top1.x,top1.z,ch).y:1.04+ys[k]*config.thickness/2;let z0=1.04+ys[k+1]*config.thickness/2+.05*Math.sin(a*22),z1=1.04+ys[k+1]*config.thickness/2+.05*Math.sin(b*22);cliff.push([{...top0,y:y0},{...top1,y:y1},{...bot1,y:z1},{...bot0,y:z0},k,j])}
-return {ch,faces,cliff}}
-function colorRGB(hex){return [parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)]}
-function tint(hex,n){let a=colorRGB(hex);return 'rgb('+a.map(c=>clamp(Math.round(c*n),0,255)).join(',')+')'}
-function p3(p,w,h){let c=Math.cos(yaw),s=Math.sin(yaw),xx=p.x*c+p.z*s,zz=-p.x*s+p.z*c;return{x:w/2+xx*scale,y:h*.54+(zz*Math.sin(elev)-p.y*Math.cos(elev))*scale,d:zz*Math.cos(elev)+p.y*Math.sin(elev)}}
-function polygon(points,col){ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);ctx.closePath();ctx.fillStyle=col;ctx.fill()}
-function path3(points,color,width,height,width2){if(points.length<2)return;let first=p3({x:points[0].x,y:height,z:points[0].z},view.width,view.height);ctx.beginPath();ctx.moveTo(first.x,first.y);for(let i=1;i<points.length;i++){let p=p3({x:points[i].x,y:height,z:points[i].z},view.width,view.height);ctx.lineTo(p.x,p.y)}ctx.lineWidth=width*scale*(width2||1);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=color;ctx.stroke()}
-function scenery(){const w=view.width,h=view.height;ctx.clearRect(0,0,w,h);let g=ctx.createRadialGradient(w*.5,h*.5,5,w*.5,h*.5,w*.7);g.addColorStop(0,'#234136');g.addColorStop(.63,'#14281f');g.addColorStop(1,'#07150f');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);if(!geomCache||dirty){geomCache=createGeometry();dirty=false}const gg=geomCache;
-// Shadow and ground beneath the floating sample.
-ctx.save();ctx.translate(w*.5,h*.78);ctx.scale(1,.25);let sh=ctx.createRadialGradient(0,0,10,0,0,config.rx*scale*.9);sh.addColorStop(0,'#06120e99');sh.addColorStop(1,'#06120e00');ctx.fillStyle=sh;ctx.beginPath();ctx.arc(0,0,config.rx*scale*.9,0,TAU);ctx.fill();ctx.restore();
-let pf=[],cache=new Map();function proj(v){let cached=cache.get(v);if(cached)return cached;let q=p3(v,w,h);cache.set(v,q);return q}
-if(layers.land){for(let f of gg.cliff){let pts=f.slice(0,4).map(proj),dep=pts.reduce((s,p)=>s+p.d,0)/4;pf.push({pts,dep,type:'cliff',k:f[4],j:f[5]})}for(let f of gg.faces){let pts=f.map(proj),dep=pts.reduce((s,p)=>s+p.d,0)/4;let d=(f[0].bank?1:0)+(f[1].bank?1:0)+(f[2].bank?1:0)+(f[3].bank?1:0),wat=(f[0].water?1:0)+(f[1].water?1:0)+(f[2].water?1:0)+(f[3].water?1:0),shade=f.reduce((s,p)=>s+p.shade,0)/4;pf.push({pts,dep,type:wat>=2?'water':d>=2?'bank':'earth',shade})}pf.sort((a,b)=>a.dep-b.dep);for(let f of pf){let n;if(f.type==='cliff'){const k=f.k,j=f.j;n=tint(k===0?'#4c4738':k%2===0?'#554739':'#3c3d32',.86+.09*Math.sin(j*.55+k))}else if(f.type==='water')n=layers.water?tint('#2d6e68',.8+(f.shade+.5)*.3):tint('#4b5547',.85+f.shade*.2);else if(f.type==='bank')n=tint('#5a5842',.84+(f.shade+.5)*.28);else n=tint('#44614a',.81+(f.shade+.5)*.3);polygon(f.pts,n)}}
-if(layers.water){for(const c of gg.ch){path3(c.pts,'#6fafa033',Math.max(.03,c.width*.16),.68);}}
-// Vegetation zones are schematic, never masquerade as final 3D trees.
-if((layers.forest||layers.understory)&&window.MangroveForest){
-  window.MangroveForest.render({ctx,p3,topo,channels:gg.ch,config,view,scale,layers});
-}
-if(layers.zones){const spots=[[-.65,-.58,.56],[-.44,-.81,.34],[-.64,.05,.32],[.56,-.75,.42],[.74,.55,.4],[.32,.81,.35]];for(const [x,z,r]of spots){let wx=x*config.rx,wz=z*config.rz,y=topo(wx,wz,gg.ch).y+.03;let c=p3({x:wx,y,z:wz},w,h);ctx.beginPath();ctx.ellipse(c.x,c.y,r*scale,r*scale*.55,0,0,TAU);ctx.fillStyle='#739e7055';ctx.fill();ctx.setLineDash([4,4]);ctx.strokeStyle='#b0c8a18c';ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([])}}
-if(window.CangioStructures){
-  window.CangioStructures.render({ctx,p3,topo,channels:gg.ch,config,view,scale,layers});
-}else{
-  console.warn('Không tải được lớp kiến trúc GĐ3');
-}
-
-ctx.save();ctx.fillStyle='#b2c8b1';ctx.font='11px Segoe UI,sans-serif';ctx.fillText('GIAI ĐOẠN 03 · CÔNG TRÌNH GỖ · ĐỊA HÌNH GD1 GIỮ NGUYÊN',24,h-12);ctx.restore();}
-function schedule(){if(frameId)return;frameId=requestAnimationFrame(()=>{frameId=0;scenery()})}
-function resize(){let rect=view.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.5);view.width=Math.round(rect.width*dpr);view.height=Math.round(rect.height*dpr);scale=Math.min(view.width/(config.rx*2.9),view.height/(config.rz*2.6));scale=clamp(scale,23*dpr,90*dpr);schedule()}
-let resizeObserver=window.ResizeObserver?new ResizeObserver(resize):null;resizeObserver?.observe(view);window.addEventListener('resize',resize);
-view.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;view.setPointerCapture(e.pointerId)});view.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw+=dx*.007;elev=clamp(elev+dy*.005,.25,1.56);schedule()});['pointerup','pointercancel','lostpointercapture'].forEach(t=>view.addEventListener(t,()=>drag=false));view.addEventListener('wheel',e=>{e.preventDefault();scale=clamp(scale*Math.exp(-e.deltaY*.001),17,120);schedule()},{passive:false});
-el('viewIso').onclick=()=>setView('iso');el('viewTop').onclick=()=>setView('top');el('viewReset').onclick=()=>{yaw=-.73;elev=.53;resize();};function setView(kind){if(kind==='top'){elev=1.56;yaw=0}else{elev=.53;yaw=-.73}el('viewIso').classList.toggle('active',kind==='iso');el('viewTop').classList.toggle('active',kind==='top');schedule()}
-// SVG plan helpers: normalized coordinates -1...1 relative to island radii.
-const toMap=p=>({x:170+p.x*120,y:137+p.z*100}),fromMap=p=>({x:clamp((p.x-170)/120,-1.18,1.18),z:clamp((p.y-137)/100,-1.2,1.2)});
-function pathSvg(points,close=false){let a=points.map((p,i)=>{let q=toMap(p);return (i?'L':'M')+q.x.toFixed(1)+' '+q.y.toFixed(1)}).join(' ');return a+(close?' Z':'')}
-function drawMap(){let coast=[],grid=[];for(let i=0;i<130;i++){let a=i/129*TAU,p=perimeter(a),m=toMap({x:p.x/config.rx,z:p.z/config.rz});coast.push(m)}let c=channels();let s=`<rect width="340" height="272" fill="#e9eddf"/>`;
-for(let i=-2;i<=2;i++){let x=170+i*48,y=137+i*40;s+=`<path d="M${x} 18V254 M28 ${y}H312" stroke="#cbd5c6" stroke-width=".5"/>`}
-s+=`<path d="${coast.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ')} Z" fill="#b0bda1" stroke="#3e6656" stroke-width="2"/>`;
-for(let ch of c){let points=ch.pts.map(p=>({x:p.x/config.rx,z:p.z/config.rz})),d=pathSvg(points);s+=`<path d="${d}" stroke="#5b6e5b" stroke-width="${(ch.width/(config.rx+config.rz)*225+5).toFixed(1)}" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="${d}" stroke="#4f9294" stroke-width="${(ch.width/(config.rx+config.rz)*225+1).toFixed(1)}" stroke-linecap="round" fill="none"/>`}
-for(const [x,z,r] of [[-.65,-.58,.55],[-.44,-.81,.45],[-.64,.05,.4],[.56,-.75,.4],[.74,.55,.4],[.32,.81,.35]]){let p=toMap({x,z});s+=`<ellipse cx="${p.x}" cy="${p.y}" rx="${r*35}" ry="${r*30}" fill="#6e8c6999" stroke="#527c5a" stroke-dasharray="2 3"/>`}
-if(layers.forest&&window.MangroveForest)s+=window.MangroveForest.mapDots({config,channels:c});
-if(window.CangioStructures)s+=window.CangioStructures.mapOverlay({config,toMap});
-else{let route=catmull(config.sites.map(t=>({x:t.x,z:t.z})),10);s+=`<path d="${pathSvg(route)}" fill="none" stroke="#d4a46a" stroke-width="4.2"/>`}
-if(mode==='water')for(const [ch,ps]of Object.entries(config.water)){ps.forEach((p,i)=>{let m=toMap(p);s+=`<circle class="handle" data-channel="${ch}" data-index="${i}" cx="${m.x}" cy="${m.y}" r="6.2" fill="#337b81"/><text class="grabtext" x="${m.x+9}" y="${m.y-6}" fill="#17443e">${ch==='main'?'M':ch==='west'?'T':'P'}${i+1}</text>`})}
-else for(const [i,p]of config.sites.entries()){let m=toMap(p);s+=`<circle class="handle" data-site="${i}" cx="${m.x}" cy="${m.y}" r="7.2" fill="${p.type==='tower'?'#3b6848':p.type==='entry'?'#c19357':'#b16c48'}"/><text class="grabtext" x="${m.x+10}" y="${m.y-6}" fill="#263b28">${p.name}</text>`}
-s+=`<text x="14" y="19" font-size="10" letter-spacing="2" fill="#365844">MẶT BẰNG / TOP VIEW</text><text x="322" y="248" text-anchor="end" font-size="9" fill="#365844">↑ BẮC (MINH HỌA)</text>`;svg.innerHTML=s;}
-function svgCoords(e){let p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;let matrix=svg.getScreenCTM();return matrix?p.matrixTransform(matrix.inverse()):{x:0,y:0}}
-svg.addEventListener('pointerdown',e=>{const t=e.target.closest('.handle');if(!t)return;dragHandle={channel:t.dataset.channel,index:t.dataset.index,site:t.dataset.site};try{svg.setPointerCapture(e.pointerId)}catch(err){}});
-svg.addEventListener('pointermove',e=>{if(!dragHandle)return;let p=fromMap(svgCoords(e));if(dragHandle.channel){let idx=Number(dragHandle.index),list=config.water[dragHandle.channel];list[idx].x=p.x;list[idx].z=p.z}else{let item=config.sites[Number(dragHandle.site)];item.x=clamp(p.x,-.90,.90);item.z=clamp(p.z,-.85,.85)}changed()});['pointerup','pointercancel','lostpointercapture'].forEach(t=>svg.addEventListener(t,()=>dragHandle=null));
-createSliders();syncEco();syncStructures();drawMap();resize();schedule();
-})();
-</script>
+<script type="module" src="./scene-stage4.js"></script>
 </body>
 </html>
