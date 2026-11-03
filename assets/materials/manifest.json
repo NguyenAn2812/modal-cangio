@@ -38,6 +38,25 @@
         }
       }
     },
+    "sediment": {
+      "origin": "https://ambientcg.com/view?id=Rock061",
+      "license": "CC0",
+      "archive_sha256": "97cb3bc4ad521355fccc4145241b318e38f5f3c66cd287591dbe5d0b9591886e",
+      "maps": {
+        "color": {
+          "file": "sediment_color.webp",
+          "bytes": 62506
+        },
+        "normal": {
+          "file": "sediment_normal.webp",
+          "bytes": 59648
+        },
+        "rough": {
+          "file": "sediment_rough.webp",
+          "bytes": 59232
+        }
+      }
+    },
     "bark": {
       "origin": "https://ambientcg.com/view?id=Bark016",
       "license": "CC0",
