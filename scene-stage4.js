@@ -60,6 +60,50 @@ const mat={
  foliage:new THREE.MeshStandardMaterial({color:'#c9dfc1',vertexColors:true,flatShading:true,roughness:.92}),
  fern:new THREE.MeshStandardMaterial({color:'#c0d0a5',vertexColors:true,flatShading:true,roughness:1})
 };
+
+// Actual Color / NormalGL / Roughness maps from the user's original PBR sets.
+// They are committed as optimized WebP by scripts/build_pbr.py. A procedural
+// fallback remains when a map is temporarily missing or GitHub Pages is stale.
+async function loadRealPBR(){
+ const loader=new THREE.TextureLoader();
+ const assetRoot='./assets/materials/';
+ const specs=[
+  {id:'ground',targets:[mat.mud],repeat:[3.6,3.9],normal:.40,tint:'#e8e5d5',roughness:.94},
+  {id:'rock',targets:[mat.wall],repeat:[2.1,2.8],normal:.62,tint:'#d9cbb2',roughness:.95},
+  {id:'bark',targets:[mat.bark],repeat:[2,2],normal:.48,tint:'#d3c0a1',roughness:.96},
+  {id:'wood',targets:[mat.wood,mat.dark,mat.roof],repeat:[1,1],normal:.38,roughness:.90}
+ ];
+ const load=(url)=>new Promise((resolve,reject)=>loader.load(url,resolve,undefined,reject));
+ let applied=0;let failed=[];
+ for(const spec of specs){
+  try{
+   const [color,normal,rough]=await Promise.all(['color','normal','rough'].map(k=>load(assetRoot+spec.id+'_'+k+'.webp')));
+   const textures=[color,normal,rough];
+   textures.forEach((tex,index)=>{
+    tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+    tex.repeat.set(...spec.repeat);
+    tex.colorSpace=index===0?THREE.SRGBColorSpace:THREE.NoColorSpace;
+    tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+    tex.needsUpdate=true;
+   });
+   for(const target of spec.targets){
+    target.map=color;target.normalMap=normal;target.roughnessMap=rough;
+    target.normalScale.set(spec.normal,spec.normal);
+    target.roughness=spec.roughness;
+    if(spec.tint)target.color.set(spec.tint);
+    target.needsUpdate=true;
+   }
+   applied++;
+  }catch(err){failed.push(spec.id);}
+ }
+ const msg=applied===4?'Đã gắn đủ 4 bộ PBR thật (Color + Normal + Roughness)':
+   applied>0?'PBR đã gắn '+applied+'/4 bộ; còn lại dùng vật liệu dự phòng':
+   'Chưa tải được file PBR trên GitHub Pages; đang dùng vật liệu dự phòng';
+ const status=document.querySelector('#materialStatus');if(status)status.textContent=msg;
+ if(applied>0&&document.querySelector('#status'))document.querySelector('#status').textContent=msg;
+ if(failed.length)console.info('Các bộ chưa có trên website:',failed);
+ return applied;
+}
 const G={rod:new THREE.CylinderGeometry(1,1,1,5),crown:new THREE.IcosahedronGeometry(1,1),fern:new THREE.ConeGeometry(1,1,4)};
 const up=new THREE.Vector3(0,1,0),dummy=new THREE.Object3D();
 function rod(g,a,b,radius,material=mat.dark){const a3=new THREE.Vector3(...a),b3=new THREE.Vector3(...b),d=b3.clone().sub(a3),length=d.length();if(length<.001)return;const m=new THREE.Mesh(G.rod,material);m.position.copy(a3).add(b3).multiplyScalar(.5);m.quaternion.setFromUnitVectors(up,d.normalize());m.scale.set(radius,length,radius);m.castShadow=true;m.receiveShadow=true;g.add(m);}
@@ -435,6 +479,7 @@ async function init(){
  try{const response=await fetch('./layouts/CanGio_GD4_v2.json',{cache:'no-store'});if(!response.ok)throw Error('HTTP '+response.status);cfg=await response.json();
  if(location.hash.startsWith('#layout=')){try{const val=unpack(location.hash.slice(8));if(valid(val))cfg=lowHuts(val);}catch(e){console.warn('Không thể nhập liên kết:',e);}}
  lowHuts(cfg);sync();resize();rebuild();$('#light').dispatchEvent(new Event('input'));$('#fog').dispatchEvent(new Event('input'));$('#loading').hidden=true;
+ loadRealPBR().catch(err=>console.warn('Material fallback:',err));
  }catch(e){console.error(e);$('#loading').textContent='Lỗi nạp cảnh: '+e.message;}
 }
 const clock=new THREE.Clock();
