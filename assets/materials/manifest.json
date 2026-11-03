@@ -1,0 +1,81 @@
+{
+  "sets": {
+    "ground": {
+      "origin": "https://www.texturecan.com/details/182/",
+      "license": "CC0",
+      "archive_sha256": "13a19e1240412dd360946b9d32f5d7d2b8ae6f3f68dc0660ade49223742c6c0a",
+      "maps": {
+        "color": {
+          "file": "ground_color.webp",
+          "bytes": 300520
+        },
+        "normal": {
+          "file": "ground_normal.webp",
+          "bytes": 85188
+        },
+        "rough": {
+          "file": "ground_rough.webp",
+          "bytes": 4800
+        }
+      }
+    },
+    "rock": {
+      "origin": "https://www.texturecan.com/details/247/",
+      "license": "CC0",
+      "archive_sha256": "fec9567d1edb10efbe63086f83dcc111db25e85b65677f5a98c84089914b0e5a",
+      "maps": {
+        "color": {
+          "file": "rock_color.webp",
+          "bytes": 306128
+        },
+        "normal": {
+          "file": "rock_normal.webp",
+          "bytes": 139648
+        },
+        "rough": {
+          "file": "rock_rough.webp",
+          "bytes": 56208
+        }
+      }
+    },
+    "bark": {
+      "origin": "https://ambientcg.com/view?id=Bark016",
+      "license": "CC0",
+      "archive_sha256": "42f324bf8fa550db9c19892cd9ff934ddd5bedbeb51dc9b04b1fd8753f5b6371",
+      "maps": {
+        "color": {
+          "file": "bark_color.webp",
+          "bytes": 193940
+        },
+        "normal": {
+          "file": "bark_normal.webp",
+          "bytes": 66650
+        },
+        "rough": {
+          "file": "bark_rough.webp",
+          "bytes": 56962
+        }
+      }
+    },
+    "wood": {
+      "origin": "https://www.texturecan.com/details/467/",
+      "license": "CC0",
+      "archive_sha256": "e494320cefe846936926917de8f220eeffc6d16a93831ae954631436622fd8a4",
+      "maps": {
+        "color": {
+          "file": "wood_color.webp",
+          "bytes": 153022
+        },
+        "normal": {
+          "file": "wood_normal.webp",
+          "bytes": 47760
+        },
+        "rough": {
+          "file": "wood_rough.webp",
+          "bytes": 20660
+        }
+      }
+    }
+  },
+  "failures": {}
+}
