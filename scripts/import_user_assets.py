@@ -14,7 +14,7 @@ if not zip_path.is_file():
 allow = {
     "red-mangrove-tree.glb.gz", "wood_color.webp", "wood_normal.webp",
     "wood_rough.webp", "water_ripple_normal.webp", "manifest.json",
-    "ATTRIBUTIONS.md",
+    "ATTRIBUTIONS.md", "user-assets-stage5.js",
     "dry_branches/dry_branches_medium_01.bin",
     "dry_branches/dry_branches_medium_01_1k.gltf",
     "dry_branches/textures/dry_branches_medium_01_arm_1k.jpg",
