@@ -297,7 +297,34 @@ function pointOnRoute(path,lengths,s){
  const dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz)||1;
  return {x:a.x+dx*t,z:a.z+dz*t,nx:-dz/l,nz:dx/l};
 }
-function walkway(g,link,c){
+function clipPlankAtFace(poly,node,face){
+ const nx=face==='east'?1:face==='west'?-1:0;
+ const nz=face==='south'?1:face==='north'?-1:0;
+ const bx=node.x+nx*node.w/2,bz=node.z+nz*node.d/2;
+ const distance=p=>(p.x-bx)*nx+(p.z-bz)*nz;
+ const out=[];
+ for(let i=0;i<poly.length;i++){
+  const a=poly[i],b=poly[(i+1)%poly.length],da=distance(a),db=distance(b);
+  if(da>=-1e-6)out.push(a);
+  if((da<0&&db>0)||(da>0&&db<0)){
+   const t=da/(da-db);
+   out.push({x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t});
+  }
+ }
+ return out;
+}
+function extrudedPlank(g,polygon,y,material){
+ if(polygon.length<3)return;
+ const shape=new THREE.Shape();
+ shape.moveTo(polygon[0].x,polygon[0].z);
+ for(let i=1;i<polygon.length;i++)shape.lineTo(polygon[i].x,polygon[i].z);
+ shape.closePath();
+ const geom=new THREE.ExtrudeGeometry(shape,{depth:.035,bevelEnabled:false,steps:1,curveSegments:1});
+ geom.rotateX(Math.PI/2);
+ const mesh=new THREE.Mesh(geom,material);
+ mesh.position.y=y+.02;mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);
+}
+function walkway(g,link,c,nodeLookup){
  const path=link.path,w=link.width,st=c.structures??{},y=DECK_Y;
  const {lengths,total}=routeLength(path);
  if(total<.03)return;
@@ -318,8 +345,14 @@ function walkway(g,link,c){
  for(let j=0;j<plankN;j++){
   const a=pointOnRoute(path,lengths,j*total/plankN),b=pointOnRoute(path,lengths,(j+1)*total/plankN);
   const dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);
-  const plank=box(g,(a.x+b.x)/2,y,(a.z+b.z)/2,len+.004,.037,w-.010,j%9===0?mat.dark:mat.wood);
-  plank.rotation.y=Math.atan2(-dz,dx);
+  const nx=-dz/len,nz=dx/len,hw=(w-.010)/2;
+  let quad=[
+   {x:a.x-nx*hw,z:a.z-nz*hw},{x:a.x+nx*hw,z:a.z+nz*hw},
+   {x:b.x+nx*hw,z:b.z+nz*hw},{x:b.x-nx*hw,z:b.z-nz*hw}
+  ];
+  quad=clipPlankAtFace(quad,nodeLookup[link.from],link.fromFace);
+  quad=clipPlankAtFace(quad,nodeLookup[link.to],link.toFace);
+  extrudedPlank(g,quad,y,j%9===0?mat.dark:mat.wood);
  }
  // One post per side at each station: its bottom is the foundation and its
  // upper part is the handrail upright. No second pile at the same position.
@@ -349,7 +382,8 @@ function structures(g,c){
  const graph=structureGraph(c);
  // Distinct links avoid crossing through hut footprints or joining rails
  // across a node. Platforms and walkway supports are built only once.
- for(const link of graph.links)walkway(g,link,c);
+ const byId=Object.fromEntries(graph.nodes.map(n=>[n.id,n]));
+ for(const link of graph.links)walkway(g,link,c,byId);
  for(const node of graph.nodes)platformNode(g,node,c);
 }
 function rebuild(){
