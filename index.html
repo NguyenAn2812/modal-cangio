@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1813">
 <meta name="description" content="Vòng Xơ Cần Giờ — Trình xem cảnh 3D rừng ngập mặn, giai đoạn 4: vật liệu, nước, ánh sáng.">
-<title>Vòng Xơ Cần Giờ · Rừng ngập mặn 3D · Giai đoạn 04</title>
+<title>Vòng Xơ Cần Giờ · GD4 lần 2 — Đảo rừng ngập mặn</title>
 <style>
 :root{--bg:#0b1813;--panel:#11231b;--edge:#334d3c;--ink:#edeadd;--muted:#9cac9a;--gold:#d0b486;--accent:#bacb91}
 *{box-sizing:border-box}
@@ -55,7 +55,7 @@ input[type=file]{display:none}
 <body>
 <div class="app">
 <header>
-  <div class="brand"><div class="logo">❧</div><div><div class="brandtitle">Vòng Xơ Cần Giờ</div><div class="micro">MANGROVE 3D / GIAI ĐOẠN 04</div></div></div>
+  <div class="brand"><div class="logo">❧</div><div><div class="brandtitle">Vòng Xơ Cần Giờ</div><div class="micro">MANGROVE 3D / GIAI ĐOẠN 04 · BẢN B</div></div></div>
   <nav class="nav"><a href="./studio.html">↗ Sửa mặt bằng</a><button id="edit">Mở Terrain Studio</button><button id="toggleControls" aria-label="Mở bảng chỉnh vật liệu">☰ Tùy chỉnh</button></nav>
 </header>
 <main id="scene" aria-label="Mô hình 3D rừng ngập mặn Cần Giờ dùng Three.js">
@@ -68,8 +68,8 @@ input[type=file]{display:none}
     <div class="camera"><button id="camReset">Góc 3D</button><button id="camTop">Từ trên xuống</button><button id="camNear">Góc gần</button></div></div>
 </main>
 <aside id="panel">
-  <div class="eyebrow">BẢN GD3 ĐÃ DUYỆT</div>
-  <h2>Vật liệu và ánh sáng</h2>
+  <div class="eyebrow">GD4 LẦN 2 · MỞ RỘNG ĐẤT</div>
+  <h2>Bờ bùn & ánh sáng</h2>
   <p id="layout">Đang tải cấu hình đã chốt…</p>
   <div class="tags"><span class="tag">Mesh 3D thật</span><span class="tag">Đất bùn</span><span class="tag">Nước lợ</span><span class="tag">Gỗ cũ</span><span class="tag">Cây: <strong id="treeCount">—</strong></span></div>
   <div class="section"><h3>Lớp cảnh 3D</h3>
@@ -77,10 +77,14 @@ input[type=file]{display:none}
     <label class="switch"><input id="layerWater" type="checkbox" checked> Nước trong các lạch</label>
     <label class="switch"><input id="layerStructures" type="checkbox" checked> Cầu gỗ, 4 chòi và tháp</label>
   </div>
-  <div class="section"><h3>Điều chỉnh trực tiếp</h3>
+  <div class="section"><h3>Đất bao quanh lạch</h3>
+<div class="item"><div class="line"><label for="landExpand">Mở rộng diện tích đảo</label><output id="landExpandValue">124%</output></div><input type="range" id="landExpand" min="106" max="145" step="1" value="124"></div>
+<div class="item"><div class="line"><label for="waterInset">Thu hẹp mặt nước vào bờ</label><output id="waterInsetValue">76%</output></div><input type="range" id="waterInset" min="48" max="91" step="1" value="76"></div>
+<p style="font-size:11px;color:#adc5b3;line-height:1.6">Giữ nguyên tọa độ các chòi, lạch và tuyến cầu GD3. Chỉ mở rộng viền đảo và vuốt nhỏ hai đầu lạch.</p></div>
+<div class="section"><h3>Điều chỉnh trực tiếp</h3>
     <div class="item"><div class="line"><label for="density">Mật độ rừng</label><output id="densityValue">140%</output></div><input type="range" id="density" min="20" max="140" step="5" value="140"></div>
-    <div class="item"><div class="line"><label for="light">Cường độ ánh sáng</label><output id="lightValue">72%</output></div><input type="range" id="light" min="0" max="100" value="72"></div>
-    <div class="item"><div class="line"><label for="fog">Sương trong rừng</label><output id="fogValue">32%</output></div><input type="range" id="fog" min="0" max="100" value="32"></div>
+    <div class="item"><div class="line"><label for="light">Cường độ ánh sáng</label><output id="lightValue">66%</output></div><input type="range" id="light" min="0" max="100" value="66"></div>
+    <div class="item"><div class="line"><label for="fog">Sương trong rừng</label><output id="fogValue">24%</output></div><input type="range" id="fog" min="0" max="100" value="24"></div>
     <div class="actions"><button id="night">Rừng tối</button><button id="dusk" class="primary">Ánh chiều</button></div>
   </div>
   <div class="section"><h3>Cấu hình và bản vẽ</h3>
@@ -88,7 +92,7 @@ input[type=file]{display:none}
     <input id="jsonInput" type="file" accept=".json,application/json">
     <p class="status" id="status" role="status">Đang chuẩn bị cảnh…</p>
   </div>
-  <div class="note"><strong>Phạm vi Giai đoạn 4.</strong> Đây là bản dựng WebGL/Three.js để duyệt vật liệu, ánh sáng và khối 3D thực. Cây và bề mặt đang dùng hình học cùng texture tạo bằng mã, <strong>chưa phải model GLB quét thật</strong>. Bố cục áp dụng đúng tệp GD3 bạn vừa gửi.</div>
+  <div class="note"><strong>GD4 lần 2 — Hướng B.</strong> Mở rộng viền đất khoảng 24%, thu mặt nước và làm mềm điểm kết thúc lạch; tăng nhận diện màu bùn–lá–gỗ nhưng vẫn giữ ánh sáng rừng chiều.  Đây là bản dựng WebGL/Three.js để duyệt vật liệu, ánh sáng và khối 3D thực. Cây và bề mặt đang dùng hình học cùng texture tạo bằng mã, <strong>chưa phải model GLB quét thật</strong>. Bố cục áp dụng đúng tệp GD3 bạn vừa gửi.</div>
   <footer>VÒNG XƠ CẦN GIỜ · EURÉKA 2026 · PROTOTYPE</footer>
 </aside>
 </div>
