@@ -102,10 +102,10 @@ function rectAround(x,z,wx,wz,y){
     {x:x+wx/2,y,z:z+wz/2},{x:x-wx/2,y,z:z+wz/2}
   ];
 }
-function drawPlatform(ctx,env,x,z,wx,wz,y,{stairs=false}={}){
+function drawPlatform(ctx,env,x,z,wx,wz,y,{stairs=false,supports=true}={}){
   const P=viewProj(env),k=env.scale,s=settings(env.config);
   const corners=rectAround(x,z,wx,wz,y);
-  if(s.piles)for(const c of corners){
+  if(s.piles&&supports)for(const c of corners){
     let ty=env.topo(c.x,c.z,env.channels).y-.11;
     seg(ctx,P({...c,y:ty}),P({...c,y:y+.06}),C.dark,Math.max(2,k*.076));
     seg(ctx,P({...c,y:ty}),P({...c,y:y+.06}),C.wood,Math.max(1.2,k*.048));
@@ -158,18 +158,14 @@ function drawHut(ctx,env,site){
   const cfg=env.config,s=settings(cfg),P=viewProj(env),k=env.scale,
         x=site.x*cfg.rx,z=site.z*cfg.rz,scale=s.scale/100,
         wx=.77*scale,wz=.72*scale,y=1.56;
-  const corners=drawPlatform(ctx,env,x,z,wx,wz,y,{stairs:true});
+  const corners=drawPlatform(ctx,env,x,z,wx,wz,y,{stairs:false,supports:false});
   const top=y+1.04*scale;
   for(const p of corners){
-    seg(ctx,P(p),P({...p,y:top}),C.dark,Math.max(2,k*.07*scale));
-    seg(ctx,P(p),P({...p,y:top}),C.wood2,Math.max(1.2,k*.039*scale));
+    seg(ctx,P({...p,y:env.topo(p.x,p.z,env.channels).y-.09}),P({...p,y:top}),C.dark,Math.max(2,k*.07*scale));
+    seg(ctx,P({...p,y:env.topo(p.x,p.z,env.channels).y-.07}),P({...p,y:top}),C.wood2,Math.max(1.2,k*.039*scale));
   }
-  // Diagonal braces tie the corners to their roof supports.
-  for(let i=0;i<4;i+=2){
-    const a=corners[i],b=corners[(i+1)%4];
-    seg(ctx,P({...a,y:y+.14}),P({...b,y:y+.68*scale}),C.edge,Math.max(.8,k*.024));
-  }
-  platformRails(ctx,env,corners,true);
+  // Door faces remain unobstructed in the plan view. Final railings
+  // and their shared posts are drawn in the Three.js viewer.
   if(s.roofs)drawRoof(ctx,env,x,z,wx,wz,top+.06*scale);
   else{
     for(let j=0;j<2;j++){
@@ -241,40 +237,71 @@ function drawLabel(ctx,env,site){
  ctx.beginPath();ctx.roundRect(q.x+10,q.y-19,w,24,6);ctx.fill();ctx.stroke();
  ctx.fillStyle='#e8dfc6';ctx.fillText(txt,q.x+19,q.y-4);ctx.restore();
 }
+// Match the GD4 connector topology; this Canvas preview intentionally
+// shows simplified decks without duplicating rail/pile geometry.
+function studioPlan(config){
+ const k=settings(config).scale/100;
+ const nodes=config.sites.map(s=>({id:s.id,type:s.type==='entry'?'entry':'hut',x:s.x*config.rx,z:s.z*config.rz,
+   w:s.type==='entry'?.62:.83*k,d:s.type==='entry'?.58:.8*k,site:s}));
+ const byId=Object.fromEntries(nodes.map(n=>[n.id,n]));
+ if(settings(config).spurs){
+  for(const [id,dx,dz]of [['hut1',-1.40,-.25],['hut3',.30,-1.44],['hut4',-1.42,.24]]){
+   const n=byId[id];if(!n)continue;
+   const dock={id:id+'-deck',type:'deck',parentId:id,x:n.x+dx,z:n.z+dz,w:.48,d:.44};
+   nodes.push(dock);byId[dock.id]=dock;
+  }
+ }
+ function port(a,b){
+  const dx=b.x-a.x,dz=b.z-a.z;
+  if(Math.abs(dx)/(a.w*.5)>=Math.abs(dz)/(a.d*.5)){
+   const sg=dx>=0?1:-1;return{x:a.x+sg*a.w*.5,z:a.z,nx:sg,nz:0};
+  }
+  const sg=dz>=0?1:-1;return{x:a.x,z:a.z+sg*a.d*.5,nx:0,nz:sg};
+ }
+ const links=[];
+ function connect(a,b,width){
+  const p=port(a,b),q=port(b,a),dist=Math.hypot(q.x-p.x,q.z-p.z),t=Math.max(.16,Math.min(.72,dist*.22));
+  const h1={x:p.x+p.nx*t,z:p.z+p.nz*t},h2={x:q.x+q.nx*t,z:q.z+q.nz*t},path=[];
+  const n=Math.max(8,Math.ceil(dist/.09));
+  for(let i=0;i<=n;i++){
+   const u=i/n,v=1-u;
+   path.push({x:v*v*v*p.x+3*v*v*u*h1.x+3*v*u*u*h2.x+u*u*u*q.x,z:v*v*v*p.z+3*v*v*u*h1.z+3*v*u*u*h2.z+u*u*u*q.z});
+  }
+  links.push({from:a.id,to:b.id,width,path});
+ }
+ for(let i=1;i<config.sites.length;i++)connect(byId[config.sites[i-1].id],byId[config.sites[i].id],config.bridgeWidth);
+ for(const n of nodes.filter(x=>x.type==='deck'))connect(byId[n.parentId],n,config.bridgeWidth*.76);
+ return{nodes,links};
+}
 function render(env){
- const {ctx,config,layers}=env;
+ const {ctx,config,layers}=env,plan=studioPlan(config);
  if(layers.walk){
-  drawBoardwalk(ctx,env,plan(config),{width:config.bridgeWidth});
-  drawSpurs(ctx,env);
+  for(const link of plan.links)drawBoardwalk(ctx,env,link.path,{width:link.width,posts:false,sideRails:false});
  }
  if(layers.sites){
-  const sites=[...config.sites].sort((a,b)=>{
-    const aa=env.p3({x:a.x*config.rx,y:0,z:a.z*config.rz},env.view.width,env.view.height).d;
-    const bb=env.p3({x:b.x*config.rx,y:0,z:b.z*config.rz},env.view.width,env.view.height).d;
-    return aa-bb;
-  });
+  const sites=[...config.sites].sort((a,b)=>env.p3({x:a.x*config.rx,y:0,z:a.z*config.rz},env.view.width,env.view.height).d-
+    env.p3({x:b.x*config.rx,y:0,z:b.z*config.rz},env.view.width,env.view.height).d);
   for(const site of sites){
-    if(site.type==='entry')drawEntrance(ctx,env,site);
-    else if(site.type==='tower')drawTower(ctx,env,site);
-    else drawHut(ctx,env,site);
-    if(layers.labels)drawLabel(ctx,env,site);
+   if(site.type==='entry')drawEntrance(ctx,env,site);
+   else drawHut(ctx,env,site);
+   if(layers.labels)drawLabel(ctx,env,site);
   }
+  for(const n of plan.nodes.filter(x=>x.type==='deck'))drawPlatform(ctx,env,n.x,n.z,n.w,n.d,1.56);
  }
 }
 function mapOverlay({config,toMap}){
- const pts=catmull(config.sites.map(p=>({x:p.x,z:p.z})),10);
- const d=pts.map((p,i)=>{const q=toMap(p);return(i?'L':'M')+q.x.toFixed(1)+' '+q.y.toFixed(1)}).join(' ');
- let s='<path d="'+d+'" fill="none" stroke="#65472f" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/><path d="'+d+'" fill="none" stroke="#d6ad77" stroke-width="4.1" stroke-linecap="round" stroke-linejoin="round"/>';
- for(const p of config.sites){
-  const q=toMap(p),r=p.type==='tower'?7:p.type==='entry'?4:5,fill=p.type==='tower'?'#493c2c':'#987047';
-  s+='<rect x="'+(q.x-r)+'" y="'+(q.y-r)+'" width="'+(r*2)+'" height="'+(r*2)+'" rx="1" stroke="#f2d5a0" stroke-width="1.2" fill="'+fill+'"/>';
+ const plan=studioPlan(config),mapPt=p=>toMap({x:p.x/config.rx,z:p.z/config.rz});
+ let out='';
+ for(const link of plan.links){
+  const d=link.path.map((p,i)=>{const q=mapPt(p);return(i?'L':'M')+q.x.toFixed(2)+' '+q.y.toFixed(2)}).join(' ');
+  out+='<path d="'+d+'" fill="none" stroke="#65472f" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  out+='<path d="'+d+'" fill="none" stroke="#d6ad77" stroke-width="4.0" stroke-linecap="round" stroke-linejoin="round"/>';
  }
- if(settings(config).spurs)for(const [id,ox,oz]of [['hut1',-.42,-.27],['hut3',.36,-.35],['hut4',-.42,.30]]){
-  const b=config.sites.find(x=>x.id===id);if(!b)continue;
-  const a=toMap({x:b.x,z:b.z}),e=toMap({x:b.x+ox/config.rx,z:b.z+oz/config.rz});
-  s+='<path d="M'+a.x+' '+a.y+'L'+e.x.toFixed(1)+' '+e.y.toFixed(1)+'" stroke="#bb9561" stroke-width="2.5" fill="none"/>';
+ for(const n of plan.nodes){
+  const q=mapPt(n),r=n.type==='entry'?4:n.type==='deck'?3:5;
+  out+='<rect x="'+(q.x-r)+'" y="'+(q.y-r)+'" width="'+(r*2)+'" height="'+(r*2)+'" rx="1" fill="#987047" stroke="#f2d5a0" stroke-width="1.2"/>';
  }
- return s;
+ return out;
 }
 window.CangioStructures={render,mapOverlay};
 })();
