@@ -120,7 +120,41 @@
     "height": 110,
     "forest": true,
     "roots": true,
-    "understory": true
+    "understory": true,
+    "treeLayout": [
+      {
+        "id": "west-mangrove",
+        "x": -0.753,
+        "z": -0.621,
+        "height": 3.05,
+        "yaw": 28,
+        "role": "cây đước ven bờ trái"
+      },
+      {
+        "id": "east-mangrove",
+        "x": 1.036,
+        "z": 0.016,
+        "height": 2.8,
+        "yaw": 146,
+        "role": "cây đước mép phải"
+      },
+      {
+        "id": "front-mangrove",
+        "x": -0.168,
+        "z": 0.84,
+        "height": 2.58,
+        "yaw": 253,
+        "role": "cây đước tán tiền cảnh"
+      },
+      {
+        "id": "back-mangrove",
+        "x": 0.207,
+        "z": -0.955,
+        "height": 2.32,
+        "yaw": 72,
+        "role": "cây đước cuối lạch"
+      }
+    ]
   },
   "structures": {
     "scale": 80,
@@ -131,9 +165,12 @@
   },
   "appearance": {
     "landExpansion": 1.24,
-    "waterInset": 0.76
+    "waterInset": 0.76,
+    "terrainDetail": 0.75,
+    "sedimentColor": "#4e4639",
+    "mudWetness": 0.77
   },
   "_project": "Vong Xo Can Gio",
-  "_version": "stage-4-v3-five-low-huts",
+  "_version": "gd5-environment-layout",
   "_unit": "conceptual"
 }
