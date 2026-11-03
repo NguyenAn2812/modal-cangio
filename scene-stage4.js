@@ -64,7 +64,7 @@ const up=new THREE.Vector3(0,1,0),dummy=new THREE.Object3D();
 function rod(g,a,b,radius,material=mat.dark){const a3=new THREE.Vector3(...a),b3=new THREE.Vector3(...b),d=b3.clone().sub(a3),length=d.length();if(length<.001)return;const m=new THREE.Mesh(G.rod,material);m.position.copy(a3).add(b3).multiplyScalar(.5);m.quaternion.setFromUnitVectors(up,d.normalize());m.scale.set(radius,length,radius);m.castShadow=true;m.receiveShadow=true;g.add(m);}
 function box(g,x,y,z,w,h,d,material=mat.wood){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;g.add(m);return m;}
 function terrain(g,c){
- const radial=50,angular=168,positions=[],colors=[],uv=[],indices=[];
+ const radial=84,angular=224,positions=[],colors=[],uv=[],indices=[];
  const shade=new THREE.Color(),wet=new THREE.Color('#887d66'),dry=new THREE.Color('#839776');
  for(let ri=0;ri<=radial;ri++)for(let aj=0;aj<=angular;aj++){const [x,z]=coast(aj/angular*TAU,ri/radial,c),y=height(x,z,c),d=riverD(x,z);positions.push(x,y,z);uv.push(x/3.5,z/3.5);shade.copy(wet).lerp(dry,clamp(d/4,0,1));colors.push(shade.r,shade.g,shade.b);}
  for(let ri=0;ri<radial;ri++)for(let aj=0;aj<angular;aj++){const a=ri*(angular+1)+aj,b=a+angular+1;indices.push(a,b,a+1,b,b+1,a+1);}
@@ -130,7 +130,7 @@ function forest(g,c){
    leaves.setMatrixAt(li,dummy.matrix);leaves.setColorAt(li,new THREE.Color(palette[(i+j)%5]));li++;
   }
  }
- [trunks,leaves,roots].forEach(obj=>{obj.instanceMatrix.needsUpdate=true;obj.castShadow=true;obj.receiveShadow=true;g.add(obj);});
+ [trunks,leaves,roots].forEach(obj=>{obj.instanceMatrix.needsUpdate=true;obj.castShadow=obj!==leaves;obj.receiveShadow=obj!==leaves;g.add(obj);}); // Avoid black opaque canopy self-shadows
  if(c.ecosystem?.roots===false)roots.visible=false;
  if(c.ecosystem?.understory!==false){
   const ferns=new THREE.InstancedMesh(G.fern,mat.fern,320);let used=0;
