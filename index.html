@@ -62,20 +62,20 @@ input[type=file]{display:none}
   <div id="loading">Đang tạo địa hình, rừng và vật liệu 3D…</div>
   <div class="intro"><div class="eyebrow">CẦN GIỜ · RỪNG SÁC · VÀM SÁT</div>
     <h1>Một lát cắt<br><em>rừng ngập mặn.</em></h1>
-    <p>Đảo 3D thử nghiệm: rừng đước, bờ bùn, lạch nước lợ, cầu gỗ và các điểm quan sát.</p>
+    <p>Bản sửa hình học: lòng lạch nằm dưới mực nước, bờ bùn chuyển tiếp mềm và chỉ có các chòi quan sát thấp.</p>
   </div>
   <div class="hint"><span class="pill">↔ Kéo để xoay · Cuộn để phóng to · Hai ngón tay để zoom</span>
     <div class="camera"><button id="camReset">Góc 3D</button><button id="camTop">Từ trên xuống</button><button id="camNear">Góc gần</button></div></div>
 </main>
 <aside id="panel">
   <div class="eyebrow">GD4 LẦN 2 · MỞ RỘNG ĐẤT</div>
-  <h2>Bờ bùn & ánh sáng</h2>
+  <h2>Bờ lạch & chòi thấp</h2>
   <p id="layout">Đang tải cấu hình đã chốt…</p>
-  <div class="tags"><span class="tag">Mesh 3D thật</span><span class="tag">Đất bùn</span><span class="tag">Nước lợ</span><span class="tag">Gỗ cũ</span><span class="tag">Cây: <strong id="treeCount">—</strong></span></div>
+  <div class="tags"><span class="tag">Mesh 3D thật</span><span class="tag">Đất bùn</span><span class="tag">Nước lợ</span><span class="tag">5 chòi thấp</span><span class="tag">Cây: <strong id="treeCount">—</strong></span></div>
   <div class="section"><h3>Lớp cảnh 3D</h3>
     <label class="switch"><input id="layerForest" type="checkbox" checked> Rừng đước, rễ và cây non</label>
     <label class="switch"><input id="layerWater" type="checkbox" checked> Nước trong các lạch</label>
-    <label class="switch"><input id="layerStructures" type="checkbox" checked> Cầu gỗ, 4 chòi và tháp</label>
+    <label class="switch"><input id="layerStructures" type="checkbox" checked> Cầu gỗ và 5 chòi thấp</label>
   </div>
   <div class="section"><h3>Đất bao quanh lạch</h3>
 <div class="item"><div class="line"><label for="landExpand">Mở rộng diện tích đảo</label><output id="landExpandValue">124%</output></div><input type="range" id="landExpand" min="106" max="145" step="1" value="124"></div>
@@ -88,11 +88,11 @@ input[type=file]{display:none}
     <div class="actions"><button id="night">Rừng tối</button><button id="dusk" class="primary">Ánh chiều</button></div>
   </div>
   <div class="section"><h3>Cấu hình và bản vẽ</h3>
-    <div class="actions"><button id="import">Nhập JSON</button><button id="export">Xuất JSON</button><button id="reset">Khôi phục GD3</button><button id="photo">Chụp PNG</button></div>
+    <div class="actions"><button id="import">Nhập JSON</button><button id="export">Xuất JSON</button><button id="reset">Khôi phục GD4</button><button id="photo">Chụp PNG</button></div>
     <input id="jsonInput" type="file" accept=".json,application/json">
     <p class="status" id="status" role="status">Đang chuẩn bị cảnh…</p>
   </div>
-  <div class="note"><strong>GD4 lần 2 — Hướng B.</strong> Mở rộng viền đất khoảng 24%, thu mặt nước và làm mềm điểm kết thúc lạch; tăng nhận diện màu bùn–lá–gỗ nhưng vẫn giữ ánh sáng rừng chiều.  Đây là bản dựng WebGL/Three.js để duyệt vật liệu, ánh sáng và khối 3D thực. Cây và bề mặt đang dùng hình học cùng texture tạo bằng mã, <strong>chưa phải model GLB quét thật</strong>. Bố cục áp dụng đúng tệp GD3 bạn vừa gửi.</div>
+  <div class="note"><strong>GD4 đã sửa lỗi địa hình.</strong> Mở rộng viền đất khoảng 24%, thu mặt nước và làm mềm điểm kết thúc lạch; tăng nhận diện màu bùn–lá–gỗ nhưng vẫn giữ ánh sáng rừng chiều.  Đây là bản dựng WebGL/Three.js để duyệt vật liệu, ánh sáng và khối 3D thực. Cây và bề mặt đang dùng hình học cùng texture tạo bằng mã, <strong>chưa phải model GLB quét thật</strong>. Bố cục áp dụng đúng tệp GD3 bạn vừa gửi.</div>
   <footer>VÒNG XƠ CẦN GIỜ · EURÉKA 2026 · PROTOTYPE</footer>
 </aside>
 </div>
