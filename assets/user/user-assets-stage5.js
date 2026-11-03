@@ -144,7 +144,7 @@ export function buildActualMangroves(THREE,g,c,assets,tools){
   {id:'front',x:-.168,z:.840,height:2.58,yaw:253},
   {id:'back',x:.207,z:-.955,height:2.32,yaw:72}
  ];
- const limit=innerWidth<700?1:innerWidth<1000?3:4;
+ const limit=Math.min(innerWidth<700?1:innerWidth<1000?3:4,clamp(Number(c.ecosystem?.treeCount??4),1,4));
  const source=assets.tree,modelBox=new THREE.Box3().setFromObject(source);
  const size=modelBox.getSize(new THREE.Vector3());
  const center=modelBox.getCenter(new THREE.Vector3());
