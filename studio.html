@@ -59,6 +59,8 @@ let config=lowHuts(clone(DEFAULT));try{const p=JSON.parse(localStorage.getItem(K
 function decodeLayout(token){const str=atob(token.replace(/-/g,'+').replace(/_/g,'/')),b=new Uint8Array(str.length);for(let i=0;i<str.length;i++)b[i]=str.charCodeAt(i);return JSON.parse(new TextDecoder().decode(b))}
 try{if(location.hash.startsWith('#layout=')){const p=decodeLayout(location.hash.slice(8));if(valid(p))config=lowHuts(p)}}catch(e){console.warn('Bố cục trong đường dẫn không hợp lệ',e)}
 if(!config.ecosystem)config.ecosystem={density:75,height:100,forest:true,roots:true,understory:true};
+if(!config.ecosystem.treeLayout)config.ecosystem.treeLayout=clone(DEFAULT.ecosystem.treeLayout);
+if(!config.appearance)config.appearance=clone(DEFAULT.appearance);
 if(!config.structures)config.structures={scale:100,railings:true,piles:true,spurs:true,roofs:true};
 const layers={land:true,water:true,walk:true,sites:true,zones:false,labels:true,forest:true,roots:true,understory:true};let mode='water',yaw=-.73,elev=.53,scale=51,drag=false,lastX=0,lastY=0,dragHandle=null,geomCache=null,screenCache=null,dirty=true,frameId=0;
 const el=id=>document.getElementById(id),view=el('view'),ctx=view.getContext('2d'),svg=el('mapSvg');
