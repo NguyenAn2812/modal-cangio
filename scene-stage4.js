@@ -101,13 +101,23 @@ function water(g,ch){
 }
 function forest(g,c){
  if(c.ecosystem?.forest===false)return;
- const rand=rng(74523),route=smooth(c.sites.map(s=>({x:s.x*c.rx,z:s.z*c.rz})),10);
+ const rand=rng(74523),graph=structureGraph(c);
+ const isNearWoodwork=(x,z,clearance)=>{
+  for(const n of graph.nodes){
+   if(Math.abs(x-n.x)<n.w/2+clearance&&Math.abs(z-n.z)<n.d/2+clearance)return true;
+  }
+  for(const link of graph.links){
+   if(pathDist(x,z,link.path)<link.width/2+clearance)return true;
+  }
+  return false;
+ };
  const count=Math.round(112*clamp((c.ecosystem?.density??100)/100,.2,1.4)),trees=[];
  for(let i=0;i<count*80&&trees.length<count;i++){
   const theta=rand()*TAU,r=Math.sqrt(rand())*.98,x=Math.cos(theta)*r*c.rx,z=Math.sin(theta)*r*c.rz;
   const margin=Math.min(...channelsNow.map(ch=>pathDist(x,z,ch.p)-ch.w*.95));
   const siteGap=Math.min(...c.sites.map(s=>Math.hypot(x-s.x*c.rx,z-s.z*c.rz)));
-  if(mask(x,z,c)>.96||margin<.25||pathDist(x,z,route)<.25||siteGap<.58)continue;
+  const blocked=isNearWoodwork(x,z,.16);
+  if(mask(x,z,c)>.96||margin<.25||blocked||siteGap<.55)continue;
   trees.push({x,z,y:height(x,z,c),h:(.88+rand()*1.16)*(c.ecosystem?.height??100)/100,r:rand()});
  }
  const n=trees.length,trunks=new THREE.InstancedMesh(G.rod,mat.bark,n);
@@ -136,7 +146,7 @@ function forest(g,c){
   const ferns=new THREE.InstancedMesh(G.fern,mat.fern,320);let used=0;
   for(let i=0;i<1000&&used<320;i++){
    const a=rand()*TAU,r=Math.sqrt(rand())*.97,x=Math.cos(a)*r*c.rx,z=Math.sin(a)*r*c.rz;
-   if(mask(x,z,c)>.95||riverD(x,z)<.80||pathDist(x,z,route)<.19)continue;
+   if(mask(x,z,c)>.95||riverD(x,z)<.80||isNearWoodwork(x,z,.08))continue;
    const h=.18+rand()*.23;
    dummy.position.set(x,height(x,z,c)+h*.42,z);dummy.rotation.set(rand()*.15,a,rand()*.12);dummy.scale.set(.07+rand()*.08,h,.07+rand()*.08);dummy.updateMatrix();ferns.setMatrixAt(used,dummy.matrix);ferns.setColorAt(used,new THREE.Color(palette[(used+2)%5]));used++;
   }
