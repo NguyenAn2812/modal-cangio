@@ -53,7 +53,9 @@ function height(x,z,c){
  // The channel floor used to be ABOVE its water. Carve a real creek basin.
  const river=nearestRiver(x,z),r=mask(x,z,c);
  const noise=.20*Math.sin(x*1.2+z*.4)*Math.cos(z*1.56-x*.45)+.13*Math.sin(x*2.9-z*1.4)+.07*Math.cos(x*4.2+z*3.3);
- const base=1.18+.12*noise-.12*smoothstep(.80,1.03,r);
+ const fine=.021*Math.sin(x*7.7+z*2.3)*Math.cos(z*8.1-x*4.0)+.009*Math.sin(15.2*x-7.2*z);
+ const base=1.18+.12*noise+fine*smoothstep(.45,1.9,river.dist/river.width)
+  -.12*smoothstep(.80,1.03,r);
  const halfWidth=river.width*GD4B.waterInset;
  const inner=halfWidth*.87;
  const outer=halfWidth+river.width*(.48+.53*Math.min(c.bank,1.1));
@@ -71,7 +73,10 @@ function paintTexture(type,seed){
 const mudTex=paintTexture('mud',80),woodTex=paintTexture('wood',16),barkTex=paintTexture('bark',9);
 mudTex.repeat.set(3.6,3.9);barkTex.repeat.set(2,2);
 const mat={
- mud:new THREE.MeshStandardMaterial({map:mudTex,color:'#eee8d9',vertexColors:true,roughness:.94,side:THREE.DoubleSide}),
+ mud:new THREE.MeshStandardMaterial({map:mudTex,color:'#e8ddc8',vertexColors:true,roughness:.89,side:THREE.DoubleSide}),
+ moss:new THREE.MeshStandardMaterial({map:mudTex,color:'#81916d',roughness:.98,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1}),
+ wet:new THREE.MeshStandardMaterial({color:'#3e3c32',roughness:.62,metalness:0,transparent:true,opacity:.34,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}),
+ pebble:new THREE.MeshStandardMaterial({map:mudTex,color:'#8e8879',roughness:.94,side:THREE.DoubleSide}),
  wall:new THREE.MeshStandardMaterial({map:mudTex,color:'#c5ad8a',vertexColors:true,roughness:1,side:THREE.DoubleSide}),
  wood:new THREE.MeshStandardMaterial({map:woodTex,color:'#dec7a4',roughness:.89}),
  dark:new THREE.MeshStandardMaterial({map:woodTex,color:'#6b513c',roughness:.98}),
@@ -90,8 +95,9 @@ async function loadRealPBR(){
  const loader=new THREE.TextureLoader();
  const assetRoot='./assets/materials/';
  const specs=[
-  {id:'ground',targets:[mat.mud],repeat:[3.6,3.9],normal:.40,tint:'#e8e5d5',roughness:.94},
-  {id:'rock',targets:[mat.wall],repeat:[2.1,2.8],normal:.62,tint:'#d9cbb2',roughness:.95},
+  {id:'ground',targets:[mat.moss],repeat:[2.2,2.2],normal:.25,tint:'#aebca2',roughness:.97},
+  {id:'sediment',targets:[mat.mud,mat.wall],repeat:[3.6,3.9],normal:.31,tint:'#b8a794',roughness:.91},
+  {id:'rock',targets:[mat.pebble],repeat:[1.8,1.8],normal:.46,tint:'#aaa397',roughness:.96},
   {id:'bark',targets:[mat.bark],repeat:[2,2],normal:.48,tint:'#d3c0a1',roughness:.96},
   {id:'wood',targets:[mat.wood,mat.dark,mat.roof],repeat:[1,1],normal:.38,roughness:.90}
  ];
@@ -118,8 +124,8 @@ async function loadRealPBR(){
    applied++;
   }catch(err){failed.push(spec.id);}
  }
- const msg=applied===4?'Đã gắn đủ 4 bộ PBR thật (Color + Normal + Roughness)':
-   applied>0?'PBR đã gắn '+applied+'/4 bộ; còn lại dùng vật liệu dự phòng':
+ const msg=applied===specs.length?'Đã gắn đủ '+specs.length+' bộ PBR (đất, trầm tích, đá, vỏ cây, gỗ)':
+   applied>0?'Đã gắn '+applied+'/'+specs.length+' bộ PBR; còn lại dùng vật liệu dự phòng':
    'Chưa tải được file PBR trên GitHub Pages; đang dùng vật liệu dự phòng';
  const status=document.querySelector('#materialStatus');if(status)status.textContent=msg;
  if(applied>0&&document.querySelector('#status'))document.querySelector('#status').textContent=msg;
@@ -132,16 +138,98 @@ function rod(g,a,b,radius,material=mat.dark){const a3=new THREE.Vector3(...a),b3
 function box(g,x,y,z,w,h,d,material=mat.wood){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;g.add(m);return m;}
 function terrain(g,c){
  const radial=84,angular=224,positions=[],colors=[],uv=[],indices=[];
- const shade=new THREE.Color(),wet=new THREE.Color('#887d66'),dry=new THREE.Color('#839776');
+ const shade=new THREE.Color(),wet=new THREE.Color('#756756'),dry=new THREE.Color('#aca68c');
  for(let ri=0;ri<=radial;ri++)for(let aj=0;aj<=angular;aj++){const [x,z]=coast(aj/angular*TAU,ri/radial,c),y=height(x,z,c),d=riverD(x,z);positions.push(x,y,z);uv.push(x/3.5,z/3.5);shade.copy(wet).lerp(dry,clamp(d/4,0,1));colors.push(shade.r,shade.g,shade.b);}
  for(let ri=0;ri<radial;ri++)for(let aj=0;aj<angular;aj++){const a=ri*(angular+1)+aj,b=a+angular+1;indices.push(a,b,a+1,b,b+1,a+1);}
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(indices);geo.computeVertexNormals();
  const top=new THREE.Mesh(geo,mat.mud);top.receiveShadow=true;g.add(top);
- const radii=[1,.98,.91,.79,.59,.38,.13,.013],ys=[0,-.22,-.45,-.81,-1.15,-1.46,-1.73,-1.78],vp=[],vc=[],vt=[],ix=[];
- for(let i=0;i<radii.length;i++)for(let j=0;j<=angular;j++){const [x,z]=coast(j/angular*TAU,radii[i],c);const y=i?1.08+ys[i]*c.thickness/1.4:height(x,z,c)-.025;vp.push(x,y,z);vt.push(j/angular*4,i/7*3);const color=new THREE.Color().setRGB(.73-i*.035,.67-i*.031,.53-i*.026);vc.push(color.r,color.g,color.b);}
+ const radii=[1,.993,.980,.958,.92,.87,.81,.72,.61,.47,.31,.12,.015],ys=[0,-.038,-.13,-.29,-.48,-.66,-.88,-1.12,-1.34,-1.52,-1.63,-1.70,-1.73],vp=[],vc=[],vt=[],ix=[];
+ for(let i=0;i<radii.length;i++)for(let j=0;j<=angular;j++){const [x,z]=coast(j/angular*TAU,radii[i],c);const y=i?1.08+ys[i]*c.thickness/1.4+.018*Math.sin(j*.27+i*.9):height(x,z,c)-.025;
+ vp.push(x,y,z);vt.push(j/angular*4,i/(radii.length-1)*3);
+ const t=i/(radii.length-1),layers=.05*Math.sin(t*31+j*.06);
+ const color=new THREE.Color().setRGB(.70-t*.21+layers,.62-t*.20+layers*.8,.49-t*.18+layers*.6);
+ vc.push(color.r,color.g,color.b);}
  for(let i=0;i<radii.length-1;i++)for(let j=0;j<angular;j++){const a=i*(angular+1)+j,b=a+angular+1;ix.push(a,a+1,b,b,a+1,b+1);}
- const cliffGeo=new THREE.BufferGeometry();cliffGeo.setAttribute('position',new THREE.Float32BufferAttribute(vp,3));cliffGeo.setAttribute('uv',new THREE.Float32BufferAttribute(vt,2));cliffGeo.setAttribute('color',new THREE.Float32BufferAttribute(vc,3));cliffGeo.setIndex(ix);cliffGeo.computeVertexNormals();const wall=new THREE.Mesh(cliffGeo,mat.wall);wall.castShadow=true;wall.receiveShadow=true;g.add(wall);
+ const cliffGeo=new THREE.BufferGeometry();cliffGeo.setAttribute('position',new THREE.Float32BufferAttribute(vp,3));cliffGeo.setAttribute('uv',new THREE.Float32BufferAttribute(vt,2));cliffGeo.setAttribute('color',new THREE.Float32BufferAttribute(vc,3));cliffGeo.setIndex(ix);cliffGeo.computeVertexNormals();
+ const wall=new THREE.Mesh(cliffGeo,mat.wall);wall.castShadow=true;wall.receiveShadow=true;g.add(wall);
+ detailGround(g,c);
 }
+// GD5 • small alluvial detail instead of excessive rocky boulders.
+// All instance positions are sampled from actual terrain height and excluded
+// from bridge/platform footprints and the channel waterline.
+function detailGround(g,c){
+ const intensity=clamp(Number(c.appearance?.terrainDetail??.75),0,1);
+ if(intensity<=.01)return;
+ const random=rng(41193),graph=structureGraph(c);
+ const walkBlocked=(x,z,extra)=>{
+  for(const n of graph.nodes)
+   if(Math.abs(x-n.x)<n.w/2+extra&&Math.abs(z-n.z)<n.d/2+extra)return true;
+  for(const link of graph.links)
+   if(pathDist(x,z,link.path)<link.width/2+extra)return true;
+  return false;
+ };
+ const sample=(wetZone)=>{
+  for(let tries=0;tries<120;tries++){
+   const theta=random()*TAU,r=Math.sqrt(random())*.97;
+   const x=c.rx*GD4B.landExpansion*r*Math.cos(theta);
+   const z=c.rz*GD4B.landExpansion*r*Math.sin(theta);
+   if(mask(x,z,c)>.965||walkBlocked(x,z,.24))continue;
+   const river=nearestRiver(x,z);
+   const v=river.dist/river.width;
+   if(wetZone){if(v<.94||v>3.25)continue;}
+   else if(v<2.1||v>6.5)continue;
+   const y=height(x,z,c);
+   if(y<.74)continue;
+   return{x,y,z};
+  }
+  return null;
+ };
+ const setup=(mesh)=>{mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);mesh.castShadow=false;mesh.receiveShadow=true;g.add(mesh);};
+ const mossGeom=new THREE.CircleGeometry(1,12),moss=new THREE.InstancedMesh(mossGeom,mat.moss,Math.round(145*intensity));
+ const wetGeom=new THREE.CircleGeometry(1,12),wet=new THREE.InstancedMesh(wetGeom,mat.wet,Math.round(150*intensity));
+ const rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI/2,0,0));
+ function patch(mesh,site,idx,radX,radZ,dy){
+  dummy.position.set(site.x,site.y+dy,site.z);
+  dummy.quaternion.copy(rot).multiply(new THREE.Quaternion().setFromAxisAngle(up,random()*TAU));
+  dummy.scale.set(radX,radZ,1);
+  dummy.updateMatrix();mesh.setMatrixAt(idx,dummy.matrix);
+ }
+ let nm=0,nw=0;
+ for(let i=0;i<moss.count;i++){
+  const p=sample(false);if(!p)break;
+  patch(moss,p,nm++,.12+random()*.30,.09+random()*.19,.014);
+ }
+ for(let i=0;i<wet.count;i++){
+  const p=sample(true);if(!p)break;
+  patch(wet,p,nw++,.10+random()*.24,.08+random()*.16,.012);
+ }
+ moss.count=nm;wet.count=nw;
+ if(nm){moss.instanceMatrix.needsUpdate=true;setup(moss);}
+ if(nw){wet.instanceMatrix.needsUpdate=true;setup(wet);}
+ const pebbleGeo=new THREE.IcosahedronGeometry(1,1);
+ const stones=new THREE.InstancedMesh(pebbleGeo,mat.pebble,Math.round(38*intensity));let np=0;
+ for(let i=0;i<stones.count;i++){
+  const p=sample(true);if(!p)break;
+  const r=.035+random()*.095;
+  dummy.position.set(p.x,p.y+r*.32,p.z);
+  dummy.rotation.set(random()*.3,random()*TAU,random()*.3);
+  dummy.scale.set(r*1.3,r*.44,r);dummy.updateMatrix();
+  stones.setMatrixAt(np++,dummy.matrix);
+ }
+ stones.count=np;if(np){stones.instanceMatrix.needsUpdate=true;setup(stones);}
+ // Organic litter on raised patches, not black triangular spikes.
+ const leafGeom=new THREE.PlaneGeometry(.08,.22);
+ const leafMaterial=new THREE.MeshStandardMaterial({color:'#5c6942',roughness:1,side:THREE.DoubleSide});
+ const leaves=new THREE.InstancedMesh(leafGeom,leafMaterial,Math.round(145*intensity));let nl=0;
+ for(let i=0;i<leaves.count;i++){
+  const p=sample(false);if(!p)break;
+  dummy.position.set(p.x,p.y+.018,p.z);dummy.rotation.set(-Math.PI/2,0,random()*TAU);
+  dummy.scale.set(.6+random()*.8,.4+random()*.7,1);dummy.updateMatrix();
+  leaves.setMatrixAt(nl++,dummy.matrix);
+ }
+ leaves.count=nl;if(nl){leaves.instanceMatrix.needsUpdate=true;setup(leaves);}
+}
+
 function water(g,ch){
  const pts=ch.p.filter(p=>mask(p.x,p.z,cfg)<.974);
  if(pts.length<2)return;
