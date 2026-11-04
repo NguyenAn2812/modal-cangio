@@ -7,6 +7,9 @@
   const menuButton = document.querySelector('.menu-button');
   const nav = document.querySelector('.main-nav');
   const links = [...document.querySelectorAll('.main-nav a[href^="#"]')];
+  const hero = document.querySelector('.hero');
+  const closingSection = document.querySelector('.final-cta');
+  const sticky = document.querySelector('.mobile-sticky-cta');
   const stepButtons = [...document.querySelectorAll('.journey-step')];
   const scene = document.querySelector('.scene-demo');
   const sceneCounter = document.querySelector('#sceneCounter');
@@ -37,6 +40,14 @@
     const ratio = Math.max(0, Math.min(1, window.scrollY / maxScroll));
     if (progress) progress.style.width = (ratio * 100).toFixed(2) + '%';
     if (header) header.classList.toggle('is-scrolled', window.scrollY > 40);
+    if (sticky && hero && closingSection) {
+      const beyondHero = hero.getBoundingClientRect().bottom < 65;
+      const approachingFinalCTA = closingSection.getBoundingClientRect().top < window.innerHeight * .65;
+      const show = window.innerWidth <= 650 && beyondHero && !approachingFinalCTA;
+      document.body.classList.toggle('show-mobile-cta', show);
+      sticky.tabIndex = show ? 0 : -1;
+      sticky.setAttribute('aria-hidden', String(!show));
+    }
   };
   let scheduled = false;
   window.addEventListener('scroll', () => {
