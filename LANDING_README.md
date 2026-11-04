@@ -36,3 +36,26 @@ Hiện bên trong là SVG minh họa, phần chữ các chặng và đường d�
 - Đổi thứ tự/copy bốn chặng: sửa nút trong `index.html` và `stageData` trong `landing.js`.
 - Đổi bảng màu: sửa các biến `:root` ở đầu `landing.css`.
 - Đổi liên kết model: các vị trí `href="./3d.html"`.
+
+## Landing Page V2 — áp dụng skill `landing-page-design`
+
+Nguồn kỹ năng: https://github.com/qu-skills/superpowers/tree/main/guides/design/landing-page-design (đường dẫn `qu-skills/skills` cũ được chuyển sang kho này).
+
+Thiết kế có **một hành động chính**: mở `3d.html` để khám phá bản dựng rừng ngập mặn Cần Giờ. Trên trang chủ, nút này được ưu tiên ở hero, hành trình, cuối trang và thanh CTA dành cho điện thoại.
+
+### Những thay đổi chính
+- **Hero rõ mục tiêu trong 5 giây**: tiêu đề “Khám phá rừng ngập mặn. Hiểu để gìn giữ.”, mô tả về mô hình 3D và nền tảng nghiên cứu Euréka; không dùng lời hứa thương mại chung chung.
+- **Minh họa tạm có ngữ cảnh**: rễ đước, đất bùn, lạch nước; có thẻ chú thích và một tuyến khám phá ba bước.
+- **Dẫn dắt từ trải nghiệm đến bằng chứng**: Hero → thông tin dự án → câu hỏi thực tế → hành trình → cơ chế nghiên cứu → giá trị → giới thiệu dự án → FAQ → CTA.
+- **Thông tin tin cậy có kiểm soát**: chỉ dùng các thuộc tính được dự án xác định; không tự thêm logo đối tác, lượt khách, testimonial hay số liệu hiệu quả chưa kiểm chứng.
+- **Mobile-first**: CTA 3D toàn chiều ngang ở hero và thanh CTA bám đáy chỉ khi đã cuộn qua hero; tránh che nút CTA cuối trang.
+- **FAQ**: phân biệt bản thử nghiệm với trò chơi hoàn chỉnh, làm rõ vai trò của nghiên cứu và không ngụ ý đo lường nhân quả bằng game.
+
+### Các file cần sửa khi thiết kế tiếp
+- `index.html`: nội dung, thứ tự các phần, nút CTA, FAQ.
+- `landing.css`: hệ thống kiểu dáng ban đầu.
+- `landing-v2.css`: lớp thiết kế giao diện v2, bảng màu rừng Sác và CSS responsive (được tải sau `landing.css`).
+- `landing.js`: chuyển chặng trải nghiệm, menu mobile, hiệu ứng cuộn và thanh CTA di động.
+
+### Giới hạn kiểm thử
+Đã kiểm tra cú pháp JavaScript và tính đúng của anchor/link nội bộ bằng mã nguồn; workflow GitHub Pages hoàn thành thành công. Bố cục WebGL và giao diện thực tế vẫn nên được xem trực tiếp trên máy tính và điện thoại trước khi chốt.
